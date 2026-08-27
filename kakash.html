@@ -22,13 +22,12 @@
         .btn-success:hover { background: #16a34a; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #334155; padding: 12px; text-align: left; vertical-align: middle; }
+        th, td { border: 1px solid #334155; padding: 12px; text-align: center; vertical-align: middle; }
         th { background: #0f172a; color: #ffd700; }
         .badge { background: #22c55e; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .hidden { display: none; }
-        .action-inputs { display: flex; gap: 8px; align-items: center; }
+        .action-inputs { display: flex; gap: 8px; justify-content: center; align-items: center; }
 
-        /* PİN KOD GENERATOR Uİ */
         .pin-display-box {
             background: #0f172a;
             border: 2px dashed #eab308;
@@ -45,18 +44,14 @@
             margin: 10px 0;
             font-family: monospace;
         }
-        .pin-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+        .pin-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <!-- 1. GİRİŞ PANELİ (ŞİFRƏ HİSSƏSİ) -->
+    <!-- GİRİŞ PANELİ -->
     <div id="loginSection" class="card login-box">
         <h2>👑 Kral Games Admin 🔒</h2>
         <p>İdarəetmə panelinə daxil olun</p>
@@ -66,62 +61,50 @@
         <p id="errorMsg" style="color: #ef4444; margin-top: 10px; font-weight: bold;"></p>
     </div>
 
-    <!-- 2. ƏSAS ADMİN İDARƏETMƏ PANELSİ -->
+    <!-- ƏSAS ADMİN PANELİ -->
     <div id="dashboardSection" class="hidden">
         
         <h2>👑 Admin İdarəetmə Paneli <span class="badge">CANLI</span></h2>
 
-        <!-- 6 RƏQƏMLİ GİRİŞ KODU GENERATORU -->
+        <!-- KOD YARATMA BÖLMƏSİ -->
         <div class="card">
-            <h3>🔑 Oyunçu Giriş Kodu (6 Rəqəmli PİN)</h3>
-            <p style="font-size: 13px; color: #94a3b8;">Buradan yeni kod yaradıb oyunçuya göndərə bilərsiniz.</p>
+            <h3>🔑 6 Rəqəmli Kod Generatoru</h3>
+            <p style="font-size: 13px; color: #94a3b8;">İlkin balansı yazın və 'YENİ KOD YARAT' düyməsinə basın (avtomatik yadda saxlanılacaq).</p>
             
             <div class="pin-display-box">
-                <div style="font-size: 12px; color: #94a3b8;">Cari Aktiv Kod:</div>
+                <div style="font-size: 12px; color: #94a3b8;">Son Yaradılan Kod:</div>
                 <div id="activePinDisplay" class="pin-code-text">------</div>
+                
+                <div style="max-width: 250px; margin: 0 auto 10px auto;">
+                    <input type="number" id="initialBalance" placeholder="İlkin Balans (Məs: 10)" value="10.00">
+                </div>
+
                 <div class="pin-actions">
-                    <button class="btn-success" onclick="generateNewPin()">YENİ KOD YARAT 🎲</button>
+                    <button class="btn-success" onclick="generateAndSavePin()">YENİ KOD YARAT VƏ SAXLA 🎲</button>
                     <button onclick="copyPin()">Kodu Kopyala 📋</button>
-                    <button class="btn-danger" onclick="deletePin()">Kodu Sıfırla 🗑️</button>
                 </div>
             </div>
         </div>
 
-        <!-- CANLI BALANS VƏ İSTİFADƏÇİ İDARƏETMƏSİ -->
+        <!-- İSTİFADƏÇİLƏR VƏ KODLARIN BALANS CƏDVƏLİ -->
         <div class="card">
-            <h3>👥 Canlı İstifadəçi və Balans İdarəetməsi</h3>
+            <h3>👥 Aktiv İstifadəçilər və Kod Bazası</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>İstifadəçi</th>
+                        <th>Giriş Kodu (PİN)</th>
                         <th>Cari Balans</th>
-                        <th>Balansı Dəyiş / Əlavə et</th>
-                        <th>Əməliyyatlar (Sil / Sıfırla)</th>
+                        <th>Balansı Artır / Çıx (Məs: +10 və ya -5)</th>
+                        <th>Əməliyyatlar</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <strong>Oyunçu #1</strong><br>
-                            <span class="badge">Aktivdir</span>
-                        </td>
-                        <td id="liveBalance" style="color: #4ade80; font-weight: bold; font-size: 20px;">10.00 ₼</td>
-                        <td>
-                            <div class="action-inputs">
-                                <input type="number" id="manualBalance" placeholder="Məbləğ" style="width: 100px; padding: 6px; margin: 0;">
-                                <button class="btn-success" onclick="updateUserBalance()">Yenilə</button>
-                            </div>
-                        </td>
-                        <td>
-                            <button class="btn-danger" onclick="resetBalance()" style="margin-right: 5px;">Sıfırla 0₼</button>
-                            <button class="btn-danger" onclick="clearUserData()">Məlumatı Sil 🗑️</button>
-                        </td>
-                    </tr>
+                <tbody id="userTableBody">
+                    <!-- Dinamik olaraq kodlar buraya dolacaq -->
                 </tbody>
             </table>
         </div>
 
-        <!-- OYUN ŞANS VƏ RTP TƏNZİMLƏMƏSİ -->
+        <!-- OYUN AYARLARI -->
         <div class="card">
             <h3>⚙️ Oyun Qazanma Şansları (RTP)</h3>
             
@@ -139,7 +122,6 @@
 </div>
 
 <script>
-    // Giriş məlumatları
     const USER = "Escobar211_98";
     const PASS = "AA211_48";
 
@@ -150,90 +132,117 @@
         if (u === USER && p === PASS) {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
-            startLiveTracking();
-            loadActivePin();
+            renderUserTable();
         } else {
             document.getElementById('errorMsg').innerText = "İstifadəçi adı və ya şifrə yanlışdır!";
         }
     }
 
-    // --- 6 RƏQƏMLİ PİN KOD MƏNTİQİ ---
-    function loadActivePin() {
-        const currentPin = localStorage.getItem('gameAccessPin');
-        if (currentPin) {
-            document.getElementById('activePinDisplay').innerText = currentPin;
-        } else {
-            document.getElementById('activePinDisplay').innerText = "YOXDUR";
-        }
+    // Brauzer bazasından məlumatları çəkmək və yazmaq
+    function getUsersData() {
+        return JSON.parse(localStorage.getItem('kral_users_db')) || {};
     }
 
-    function generateNewPin() {
-        // 100000 - 999999 arası təsadüfi 6 rəqəmli kod yarat
-        const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
-        localStorage.setItem('gameAccessPin', randomPin);
-        document.getElementById('activePinDisplay').innerText = randomPin;
-        alert("Yeni 6 rəqəmli kod yaradıldı: " + randomPin);
+    function saveUsersData(data) {
+        localStorage.setItem('kral_users_db', JSON.stringify(data));
+        renderUserTable();
+    }
+
+    // 1. Avtomatik 6 rəqəmli Kod Yaradır və Anında Yadda Saxlayır
+    function generateAndSavePin() {
+        const newPin = Math.floor(100000 + Math.random() * 900000).toString();
+        let initBal = parseFloat(document.getElementById('initialBalance').value);
+        if (isNaN(initBal)) initBal = 0;
+
+        let users = getUsersData();
+        users[newPin] = {
+            balance: initBal.toFixed(2),
+            createdAt: new Date().toLocaleDateString()
+        };
+
+        document.getElementById('activePinDisplay').innerText = newPin;
+        saveUsersData(users);
+        alert(`Yeni Kod Yaradıldı və Saxlanıldı!\nKod: ${newPin}\nBalans: ${initBal.toFixed(2)} ₼`);
     }
 
     function copyPin() {
-        const pin = localStorage.getItem('gameAccessPin');
-        if (pin) {
-            navigator.clipboard.writeText(pin);
-            alert("Kod müqəvaya kopyalandı: " + pin);
+        const pinText = document.getElementById('activePinDisplay').innerText;
+        if (pinText !== "------") {
+            navigator.clipboard.writeText(pinText);
+            alert("Kod kopyalandı: " + pinText);
         } else {
-            alert("Kopyalamaq üçün aktiv kod yoxdur!");
+            alert("Kopyalamaq üçün kod yaradılmayıb!");
         }
     }
 
-    function deletePin() {
-        if (confirm("Giriş kodunu silmək istədiyinizdən əminsiniz? (Oyunçu daxil ola bilməyəcək)")) {
-            localStorage.removeItem('gameAccessPin');
-            document.getElementById('activePinDisplay').innerText = "YOXDUR";
-            alert("Kod silindi!");
+    // 2. İstifadəçi Cədvəlini Rəndərləyir
+    function renderUserTable() {
+        const users = getUsersData();
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = "";
+
+        const pinKeys = Object.keys(users);
+        if (pinKeys.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="color: #94a3b8;">Hələ heç bir aktiv kod yaradılmayıb.</td></tr>`;
+            return;
+        }
+
+        pinKeys.forEach(pin => {
+            const user = users[pin];
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong style="font-size: 18px; letter-spacing: 2px; color: #ffd700;">${pin}</strong></td>
+                <td style="color: #4ade80; font-weight: bold; font-size: 18px;">${parseFloat(user.balance).toFixed(2)} ₼</td>
+                <td>
+                    <div class="action-inputs">
+                        <input type="number" id="input_${pin}" placeholder="+ / - Məbləğ" style="width: 110px; padding: 6px; margin: 0;">
+                        <button class="btn-success" onclick="modifyBalance('${pin}')">Əlavə Et / Çıx</button>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn-danger" onclick="resetUserBalance('${pin}')" style="margin-right: 5px;">0 ₼</button>
+                    <button class="btn-danger" onclick="deleteUserPin('${pin}')">Sil 🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 3. Balansa Məbləğ Əlavə Et / Çıx (+ / -)
+    function modifyBalance(pin) {
+        const valInput = document.getElementById(`input_${pin}`);
+        const amount = parseFloat(valInput.value);
+        if (isNaN(amount)) return alert("Düzgün məbləğ daxil edin!");
+
+        let users = getUsersData();
+        let currentBal = parseFloat(users[pin].balance);
+        let newBal = currentBal + amount;
+
+        if (newBal < 0) newBal = 0; // Balans mənfiyə düşməsin
+
+        users[pin].balance = newBal.toFixed(2);
+        saveUsersData(users);
+        alert(`Kod: ${pin}\nKöhnə Balans: ${currentBal.toFixed(2)} ₼\nYeni Balans: ${newBal.toFixed(2)} ₼`);
+    }
+
+    // 4. Balansı Sıfırla (0 ₼ et)
+    function resetUserBalance(pin) {
+        if (confirm(`${pin} kodunun balansını sıfırlamaq istəyirsiniz?`)) {
+            let users = getUsersData();
+            users[pin].balance = "0.00";
+            saveUsersData(users);
         }
     }
 
-    // Canlı balans izləmə
-    function startLiveTracking() {
-        setInterval(() => {
-            let currentBal = localStorage.getItem('userBalance');
-            if(currentBal === null) {
-                document.getElementById('liveBalance').innerText = '0.00 ₼';
-            } else {
-                document.getElementById('liveBalance').innerText = parseFloat(currentBal).toFixed(2) + ' ₼';
-            }
-        }, 1000);
-    }
-
-    // 1. Balansı əllə daxil edib dəyişmək
-    function updateUserBalance() {
-        let val = document.getElementById('manualBalance').value;
-        if(val !== "") {
-            localStorage.setItem('userBalance', parseFloat(val).toFixed(2));
-            alert("Balans uğurla yeniləndi: " + val + " ₼");
-            document.getElementById('manualBalance').value = "";
-        } else {
-            alert("Lütfən məbləğ daxil edin!");
+    // 5. Kodu Bazadan Sil
+    function deleteUserPin(pin) {
+        if (confirm(`${pin} kodunu bazadan silmək istəyirsiniz? (Oyunçu daha daxil ola bilməyəcək)`)) {
+            let users = getUsersData();
+            delete users[pin];
+            saveUsersData(users);
         }
     }
 
-    // 2. Balansı Sıfırlamaq (0.00 AZN etmək)
-    function resetBalance() {
-        if(confirm("İstifadəçinin balansını sıfırlamaq istədiyinizdən əminsiniz?")) {
-            localStorage.setItem('userBalance', '0.00');
-            alert("Balans sıfırlandı!");
-        }
-    }
-
-    // 3. İstifadəçi Data/Balans məlumatlarını tamamilə silmək
-    function clearUserData() {
-        if(confirm("İstifadəçiyə aid bütün saxlanılan məlumatları və balansı silmək istəyirsiniz?")) {
-            localStorage.removeItem('userBalance');
-            alert("İstifadəçi məlumatları silindi!");
-        }
-    }
-
-    // Şans ayarlarını saxla
     function saveSettings() {
         let fruitRate = document.getElementById('fruitWinRate').value;
         let mines = document.getElementById('mineCount').value;
