@@ -7,34 +7,40 @@
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
+        .container { max-width: 950px; margin: 0 auto; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         h2, h3 { color: #ffd700; margin-top: 0; }
         .login-box { max-width: 400px; margin: 80px auto; text-align: center; }
         input[type="text"], input[type="password"], input[type="number"] {
             width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px;
         }
-        button { background: #eab308; color: #000; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; }
+        button { background: #eab308; color: #000; border: none; padding: 10px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         button:hover { background: #ca8a04; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #334155; padding: 12px; text-align: left; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #22c55e; color: black; }
+        .btn-success:hover { background: #16a34a; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #334155; padding: 12px; text-align: left; vertical-align: middle; }
         th { background: #0f172a; color: #ffd700; }
         .badge { background: #22c55e; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .hidden { display: none; }
+        .action-inputs { display: flex; gap: 8px; align-items: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <!-- 1. GİRİŞ PANELİ (TƏHLÜKƏSİZLİK) -->
+    <!-- 1. GİRİŞ PANELİ (ŞİFRƏ HİSSƏSİ) -->
     <div id="loginSection" class="card login-box">
         <h2>👑 Kral Games Admin 🔒</h2>
-        <p>İdaretmə panelinə daxil olun</p>
+        <p>İdarəetmə panelinə daxil olun</p>
         <input type="text" id="adminUser" placeholder="İstifadəçi adı">
         <input type="password" id="adminPass" placeholder="Şifrə">
-        <button onclick="login()">Daxil Ol 🚀</button>
-        <p id="errorMsg" style="color: #ef4444; margin-top: 10px;"></p>
+        <button onclick="login()" style="width: 100%; margin-top: 10px;">Daxil Ol 🚀</button>
+        <p id="errorMsg" style="color: #ef4444; margin-top: 10px; font-weight: bold;"></p>
     </div>
 
     <!-- 2. ƏSAS ADMİN İDARƏETMƏ PANELSİ -->
@@ -42,26 +48,34 @@
         
         <h2>👑 Admin İdarəetmə Paneli <span class="badge">CANLI</span></h2>
 
-        <!-- CANLI BALANS VƏ İSTİFADƏÇİ CƏDVƏLİ -->
+        <!-- CANLI BALANS VƏ İSTİFADƏÇİ İDARƏETMƏSİ -->
         <div class="card">
-            <h3>👥 Canlı İstifadəçi İzləmə</h3>
+            <h3>👥 Canlı İstifadəçi və Balans İdarəetməsi</h3>
             <table>
                 <thead>
                     <tr>
                         <th>İstifadəçi</th>
                         <th>Cari Balans</th>
-                        <th>Status</th>
-                        <th>Balans Artır / Çıxar</th>
+                        <th>Balansı Dəyiş / Əlavə et</th>
+                        <th>Əməliyyatlar (Sil / Sıfırla)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Oyunçu #1 (Telegram)</td>
-                        <td id="liveBalance" style="color: #4ade80; font-weight: bold; font-size: 18px;">10.00 ₼</td>
-                        <td><span class="badge">Aktivdir</span></td>
                         <td>
-                            <input type="number" id="manualBalance" placeholder="Məbləğ (məs: 50)" style="width: 120px; padding: 5px;">
-                            <button onclick="updateUserBalance()" style="width: auto; padding: 6px 12px;">Tətbiq et</button>
+                            <strong>Oyunçu #1</strong><br>
+                            <span class="badge">Aktivdir</span>
+                        </td>
+                        <td id="liveBalance" style="color: #4ade80; font-weight: bold; font-size: 20px;">10.00 ₼</td>
+                        <td>
+                            <div class="action-inputs">
+                                <input type="number" id="manualBalance" placeholder="Məbləğ" style="width: 100px; padding: 6px; margin: 0;">
+                                <button class="btn-success" onclick="updateUserBalance()">Yenilə</button>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn-danger" onclick="resetBalance()" style="margin-right: 5px;">Sıfırla 0₼</button>
+                            <button class="btn-danger" onclick="clearUserData()">Məlumatı Sil 🗑️</button>
                         </td>
                     </tr>
                 </tbody>
@@ -86,7 +100,7 @@
 </div>
 
 <script>
-    // Giriş məlumatları (əvvəlki kimi)
+    // Giriş məlumatları
     const USER = "Escobar211_98";
     const PASS = "AA211_48";
 
@@ -106,17 +120,40 @@
     // Canlı balans izləmə
     function startLiveTracking() {
         setInterval(() => {
-            let currentBal = localStorage.getItem('userBalance') || '10.00';
-            document.getElementById('liveBalance').innerText = parseFloat(currentBal).toFixed(2) + ' ₼';
+            let currentBal = localStorage.getItem('userBalance');
+            if(currentBal === null) {
+                document.getElementById('liveBalance').innerText = '0.00 ₼';
+            } else {
+                document.getElementById('liveBalance').innerText = parseFloat(currentBal).toFixed(2) + ' ₼';
+            }
         }, 1000);
     }
 
-    // Balansı əllə dəyişmək
+    // 1. Balansı əllə daxil edib dəyişmək
     function updateUserBalance() {
         let val = document.getElementById('manualBalance').value;
         if(val !== "") {
             localStorage.setItem('userBalance', parseFloat(val).toFixed(2));
-            alert("Balans yeniləndi: " + val + " ₼");
+            alert("Balans uğurla yeniləndi: " + val + " ₼");
+            document.getElementById('manualBalance').value = "";
+        } else {
+            alert("Lütfən məbləğ daxil edin!");
+        }
+    }
+
+    // 2. Balansı Sıfırlamaq (0.00 AZN etmək)
+    function resetBalance() {
+        if(confirm("İstifadəçinin balansını sıfırlamaq istədiyinizdən əminsiniz?")) {
+            localStorage.setItem('userBalance', '0.00');
+            alert("Balans sıfırlandı!");
+        }
+    }
+
+    // 3. İstifadəçi Data/Balans məlumatlarını tamamilə silmək
+    function clearUserData() {
+        if(confirm("İstifadəçiyə aid bütün saxlanılan məlumatları və balansı silmək istəyirsiniz?")) {
+            localStorage.removeItem('userBalance');
+            alert("İstifadəçi məlumatları silindi!");
         }
     }
 
