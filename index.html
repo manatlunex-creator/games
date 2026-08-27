@@ -1,259 +1,187 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Kral Games 👑</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-      color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center; margin: 0; padding: 15px; min-height: 100vh;
-    }
-    #splash {
-      position: fixed; inset: 0; background: #020617;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 100; transition: opacity 0.5s ease;
-    }
-    .crown { font-size: 80px; animation: pulse 1.5s infinite alternate; }
-    @keyframes pulse { 0% { transform: scale(1); filter: drop-shadow(0 0 10px #eab308); } 100% { transform: scale(1.15); filter: drop-shadow(0 0 25px #eab308); } }
-    .card {
-      background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px);
-      padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #334155;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 15px 0; }
-    .cell {
-      background: #334155; height: 50px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center; font-size: 22px;
-      cursor: pointer; user-select: none; transition: transform 0.1s, background 0.2s;
-    }
-    .cell:active { transform: scale(0.92); }
-    .btn {
-      background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
-      padding: 12px 15px; border-radius: 10px; font-weight: bold; width: 100%; margin-top: 5px;
-      cursor: pointer; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3); transition: 0.2s;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn-cashout { background: linear-gradient(90deg, #16a34a, #15803d); box-shadow: 0 2px 10px rgba(22, 163, 74, 0.3); }
-    .btn-deposit { background: linear-gradient(90deg, #eab308, #ca8a04); color: black; box-shadow: 0 2px 10px rgba(234, 179, 8, 0.3); }
-    header {
-      display: flex; flex-direction: column; gap: 10px; background: rgba(30, 41, 59, 0.8);
-      padding: 12px 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid #334155;
-    }
-    .header-top { display: flex; justify-content: space-between; align-items: center; font-size: 16px; }
-    .header-actions { display: flex; gap: 10px; }
-    input, select {
-      padding: 10px; width: 85%; border-radius: 8px; border: 1px solid #475569;
-      background: #0f172a; color: white; text-align: center; margin: 8px 0; font-size: 16px; outline: none;
-    }
-    .spinning { animation: spin 0.1s infinite linear; }
-    @keyframes spin { 0% { transform: translateY(-5px); } 50% { transform: translateY(5px); } 100% { transform: translateY(-5px); } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kral Games - Casino Mini App</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; user-select: none; }
+        body { background: #0a0a0c; color: #ffffff; margin: 0; padding: 15px; text-align: center; }
+        
+        /* HEADER VƏ BALANS */
+        .header { background: linear-gradient(135deg, #1e1b4b, #311b92); border-radius: 16px; padding: 15px; margin-bottom: 20px; border: 2px solid #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        .balance-title { font-size: 14px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 32px; font-weight: 900; color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.5); margin: 5px 0; }
+
+        /* OYUN KARTLARI */
+        .game-card { background: #13151c; border-radius: 20px; padding: 20px; margin-bottom: 25px; border: 1px solid #2a2d3d; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .game-banner { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; border: 1px solid #ffd700; margin-bottom: 15px; }
+        .game-title { font-size: 22px; font-weight: bold; color: #ffd700; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-bottom: 15px; }
+
+        /* MƏRC DÜYMƏLƏRİ */
+        .bet-container { margin: 15px 0; }
+        .bet-label { font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
+        .bet-buttons { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .bet-btn { background: #1e293b; color: #ffd700; border: 1px solid #ffd700; padding: 10px 14px; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .bet-btn.active { background: #ffd700; color: #000; box-shadow: 0 0 12px #ffd700; transform: scale(1.05); }
+
+        /* 3x3 MEYVƏ ŞƏBƏKƏSİ */
+        .fruit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 15px auto; background: #090a0f; padding: 12px; border-radius: 14px; border: 1px solid #334155; }
+        .fruit-cell { background: #1e293b; border-radius: 10px; height: 75px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 1px solid #475569; transition: transform 0.1s; }
+        .fruit-cell.spin { transform: rotateX(360deg); }
+
+        /* 5x5 MINES ŞƏBƏKƏSİ */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 320px; margin: 15px auto; background: #090a0f; padding: 12px; border-radius: 14px; border: 1px solid #334155; }
+        .mine-cell { background: #1e293b; border-radius: 8px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 1px solid #475569; cursor: pointer; }
+        .mine-cell.open-gem { background: #064e3b; border-color: #10b981; }
+        .mine-cell.open-bomb { background: #7f1d1d; border-color: #ef4444; }
+
+        /* ƏSAS FƏALİYYƏT DÜYMƏSİ */
+        .main-btn { background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; border: none; width: 100%; max-width: 300px; padding: 14px; font-size: 18px; font-weight: 900; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4); text-transform: uppercase; }
+        .main-btn:active { transform: scale(0.98); }
+    </style>
 </head>
 <body>
 
-  <!-- Açılış Animasiyası və Kod Tələbi -->
-  <div id="splash">
-    <div class="crown">👑</div>
-    <h1 style="margin: 10px 0; color: #eab308; text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);">KRAL GAMES</h1>
-    <p style="color: #94a3b8; margin-bottom: 5px;">Aktivasiya kodunu daxil edin:</p>
-    <input type="text" id="promo-input" placeholder="6 rəqəmli kod" maxlength="6">
-    <button class="btn" onclick="activateCode()" style="width: 60%; margin-top: 10px;">Daxil Ol 🚀</button>
-  </div>
-
-  <!-- Üst Panel & Balans -->
-  <header>
-    <div class="header-top">
-      <span>👑 <b>Kral Games</b></span>
-      <div>💰 Balans: <b id="balance" style="color: #4ade80;">0.00</b> ₼</div>
+    <!-- XƏBƏRDARLIQ MƏTNi VƏ BALANS -->
+    <div class="header">
+        <div class="balance-title">👑 ƏSAS BALANS QALIĞI</div>
+        <div class="balance-amount"><span id="userBalance">10.00</span> ₼</div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-deposit" onclick="redirectToAdmin()">Balans Artır ➕</button>
-      <button class="btn btn-cashout" onclick="redirectToAdmin()">Çıxarış 💸</button>
+
+    <!-- 1. MEYVƏ OYUNU -->
+    <div class="game-card">
+        <!-- 🔴 ƏVƏZ ET: MEYVƏ ŞƏKLİNİN LİNKİNİ AŞAĞIDAKI SRC-YƏ YAZ -->
+        <img src="MEYVƏ_OYUNU_ŞƏKLİ.jpg" alt="Fruits Game" class="game-banner" onerror="this.src='https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=500'">
+        <div class="game-title">🎰 FRUITS GAME (3x3)</div>
+
+        <div class="bet-container">
+            <div class="bet-label">MƏRC MƏBLƏĞİNİ SEÇİN:</div>
+            <div class="bet-buttons">
+                <button class="bet-btn active" onclick="selectBet(0.20, this)">0.20 ₼</button>
+                <button class="bet-btn" onclick="selectBet(0.50, this)">0.50 ₼</button>
+                <button class="bet-btn" onclick="selectBet(1.00, this)">1.00 ₼</button>
+                <button class="bet-btn" onclick="selectBet(2.00, this)">2.00 ₼</button>
+                <button class="bet-btn" onclick="selectBet(5.00, this)">5.00 ₼</button>
+            </div>
+        </div>
+
+        <div class="fruit-grid" id="fruitGrid">
+            <div class="fruit-cell">❓</div><div class="fruit-cell">❓</div><div class="fruit-cell">❓</div>
+            <div class="fruit-cell">❓</div><div class="fruit-cell">❓</div><div class="fruit-cell">❓</div>
+            <div class="fruit-cell">❓</div><div class="fruit-cell">❓</div><div class="fruit-cell">❓</div>
+        </div>
+
+        <button class="main-btn" onclick="spinFruits()">FIRLAT 🎰</button>
     </div>
-  </header>
 
-  <!-- Mina Oyunu -->
-  <div class="card">
-    <h3>💣 Mina Oyunu</h3>
-    <div>Mərc: <input type="number" id="mine-bet" value="0.20" min="0.20" max="5.00" step="0.10"> ₼</div>
-    <div class="grid" id="mine-board"></div>
-    <button class="btn" id="start-mine-btn" onclick="startMineGame()">Oyuna Başla 🎮</button>
-    <button class="btn btn-cashout" id="cashout-mine-btn" onclick="cashoutMine()" style="display:none;">Qazancı Götür (<span id="mine-payout">0.00</span> ₼)</button>
-  </div>
+    <!-- 2. MINES OYUNU -->
+    <div class="game-card">
+        <!-- 🔴 ƏVƏZ ET: MINES ŞƏKLİNİN LİNKİNİ AŞAĞIDAKI SRC-YƏ YAZ -->
+        <img src="MINES_OYUNU_ŞƏKLİ.jpg" alt="Mines Game" class="game-banner" onerror="this.src='https://images.unsplash.com/photo-1605870445919-838d190e8e1b?w=500'">
+        <div class="game-title">💣 MINES GAME (5x5)</div>
 
-  <!-- Meyvə Oyunu -->
-  <div class="card">
-    <h3>🍎 Meyvə Oyunu</h3>
-    <div>Mərc: <input type="number" id="fruit-bet" value="0.20" min="0.20" max="5.00" step="0.10"> ₼</div>
-    <h1 id="fruit-display" style="font-size: 40px; margin: 15px 0; letter-spacing: 5px;">🍎 | 🍑 | 🍋</h1>
-    <button class="btn" id="fruit-spin-btn" onclick="playFruit()">Fırlat 🎰</button>
-  </div>
+        <div class="bet-container">
+            <div class="bet-label">MƏRC MƏBLƏĞİNİ SEÇİN:</div>
+            <div class="bet-buttons">
+                <button class="bet-btn active" onclick="selectBet(0.20, this)">0.20 ₼</button>
+                <button class="bet-btn" onclick="selectBet(0.50, this)">0.50 ₼</button>
+                <button class="bet-btn" onclick="selectBet(1.00, this)">1.00 ₼</button>
+                <button class="bet-btn" onclick="selectBet(2.00, this)">2.00 ₼</button>
+                <button class="bet-btn" onclick="selectBet(5.00, this)">5.00 ₼</button>
+            </div>
+        </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        <div class="mines-grid" id="minesGrid"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
-      authDomain: "game-44f1a.firebaseapp.com",
-      projectId: "game-44f1a",
-      storageBucket: "game-44f1a.firebasestorage.app",
-      messagingSenderId: "121003848252",
-      appId: "1:121003848252:web:b9b2cea6c9d9682e89c939"
-    };
+        <button class="main-btn" onclick="initMines()">YENİ OYUN BAŞLAT 💣</button>
+    </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); }
+    <script>
+        let currentBet = 0.20;
+        let balance = parseFloat(localStorage.getItem('userBalance')) || 10.00;
+        document.getElementById('userBalance').innerText = balance.toFixed(2);
 
-    let balance = 0;
-    let winRate = 20;
-    let currentBet = 0;
-    let mineMultiplier = 1.0;
-    let activeMines = [];
-
-    async function loadSettings() {
-      try {
-        const docSnap = await getDoc(doc(db, "settings", "rtp"));
-        if (docSnap.exists()) winRate = docSnap.data().winRate || 20;
-      } catch(e) {}
-    }
-    loadSettings();
-
-    window.activateCode = async () => {
-      const code = document.getElementById("promo-input").value.trim();
-      if (!code) return alert("Kodu daxil edin!");
-
-      const codeRef = doc(db, "codes", code);
-      const codeSnap = await getDoc(codeRef);
-
-      if (codeSnap.exists()) {
-        const data = codeSnap.data();
-        balance += data.amount;
-        updateBalanceDisplay();
-        await deleteDoc(codeRef);
-        document.getElementById("splash").style.opacity = "0";
-        setTimeout(() => document.getElementById("splash").style.display = "none", 500);
-      } else {
-        alert("Xəta: Kod yanlışdır və ya istifadə olunub!");
-      }
-    };
-
-    function updateBalanceDisplay() {
-      document.getElementById("balance").innerText = balance.toFixed(2);
-    }
-
-    window.redirectToAdmin = () => {
-      const adminUrl = "https://t.me/gamesadmin1";
-      if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink(adminUrl);
-      } else {
-        window.location.href = adminUrl;
-      }
-    };
-
-    // --- MINA OYUNU ---
-    window.startMineGame = () => {
-      const bet = parseFloat(document.getElementById("mine-bet").value);
-      if (isNaN(bet) || bet < 0.20 || bet > 5.00) return alert("Mərc 0.20 ₼ - 5.00 ₼ arası olmalıdır!");
-      if (bet > balance) return alert("Balansınızda kifayət qədər vəsait yoxdur!");
-
-      balance -= bet;
-      currentBet = bet;
-      updateBalanceDisplay();
-
-      mineMultiplier = 1.2;
-      const board = document.getElementById("mine-board");
-      board.innerHTML = "";
-
-      const isWinTarget = Math.random() * 100 < winRate;
-      const bombIndex = isWinTarget ? -1 : Math.floor(Math.random() * 25);
-
-      for (let i = 0; i < 25; i++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.innerText = "❓";
-        cell.onclick = () => openCell(cell, i === bombIndex);
-        board.appendChild(cell);
-      }
-
-      document.getElementById("start-mine-btn").style.display = "none";
-      document.getElementById("cashout-mine-btn").style.display = "block";
-      document.getElementById("mine-payout").innerText = (currentBet * mineMultiplier).toFixed(2);
-    };
-
-    function openCell(cell, isBomb) {
-      if (cell.innerText !== "❓") return;
-
-      if (isBomb) {
-        cell.innerText = "💣";
-        cell.style.background = "#dc2626";
-        setTimeout(() => { alert("Təəssüf! Minaya düşdünüz."); resetMineGame(); }, 200);
-      } else {
-        cell.innerText = "💎";
-        cell.style.background = "#16a34a";
-        mineMultiplier += 0.3;
-        document.getElementById("mine-payout").innerText = (currentBet * mineMultiplier).toFixed(2);
-      }
-    }
-
-    window.cashoutMine = () => {
-      const winAmt = currentBet * mineMultiplier;
-      balance += winAmt;
-      updateBalanceDisplay();
-      alert(`Təbrik edirik! Qazandınız: ${winAmt.toFixed(2)} ₼`);
-      resetMineGame();
-    };
-
-    function resetMineGame() {
-      document.getElementById("start-mine-btn").style.display = "block";
-      document.getElementById("cashout-mine-btn").style.display = "none";
-      document.getElementById("mine-board").innerHTML = "";
-    }
-
-    // --- MEYVƏ OYUNU ---
-    const fruits = ["🍎", "🍑", "🍋", "🍊"];
-    window.playFruit = () => {
-      const bet = parseFloat(document.getElementById("fruit-bet").value);
-      if (isNaN(bet) || bet < 0.20 || bet > 5.00) return alert("Mərc 0.20 ₼ - 5.00 ₼ arası olmalıdır!");
-      if (bet > balance) return alert("Balansınızda kifayət qədər vəsait yoxdur!");
-
-      balance -= bet;
-      updateBalanceDisplay();
-
-      const display = document.getElementById("fruit-display");
-      display.classList.add("spinning");
-
-      setTimeout(() => {
-        display.classList.remove("spinning");
-        const isWin = Math.random() * 100 < winRate;
-        let f1, f2, f3;
-
-        if (isWin) {
-          const picked = fruits[Math.floor(Math.random() * fruits.length)];
-          f1 = f2 = f3 = picked;
-        } else {
-          f1 = fruits[Math.floor(Math.random() * fruits.length)];
-          f2 = fruits[Math.floor(Math.random() * fruits.length)];
-          f3 = fruits[(fruits.indexOf(f1) + 1) % fruits.length];
+        // Web Audio Synthesizer (Səs Effekti Üçün)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type='sine', duration=0.1) {
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
         }
 
-        display.innerText = `${f1} | ${f2} | ${f3}`;
-
-        if (f1 === f2 && f2 === f3) {
-          const winAmt = bet * 3;
-          balance += winAmt;
-          alert(`Mükəmməl! Qazandınız: ${winAmt.toFixed(2)} ₼`);
+        // Mərc Seçimi
+        function selectBet(amount, btn) {
+            currentBet = amount;
+            playSound(500, 'sine', 0.08);
+            document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
-        updateBalanceDisplay();
-      }, 600);
-    };
-  </script>
+
+        // Meyvə Oyunu Məntiqi
+        function spinFruits() {
+            if (balance < currentBet) return alert("Yetersiz Balans!");
+            balance -= currentBet;
+            updateBalance();
+            playSound(300, 'square', 0.2);
+
+            const icons = ['🍎', '🍋', '🍇', '🔔', '💎', '7️⃣'];
+            const cells = document.querySelectorAll('.fruit-cell');
+
+            cells.forEach(cell => {
+                cell.classList.add('spin');
+                setTimeout(() => {
+                    cell.innerText = icons[Math.floor(Math.random() * icons.length)];
+                    cell.classList.remove('spin');
+                }, 150);
+            });
+        }
+
+        // Mines Oyunu Məntiqi
+        function initMines() {
+            if (balance < currentBet) return alert("Yetersiz Balans!");
+            balance -= currentBet;
+            updateBalance();
+            playSound(600, 'sine', 0.15);
+
+            const grid = document.getElementById('minesGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                let cell = document.createElement('div');
+                cell.className = 'mine-cell';
+                cell.innerText = '❓';
+                cell.onclick = function() {
+                    if (this.innerText !== '❓') return;
+                    let isGem = Math.random() > 0.25;
+                    if (isGem) {
+                        this.innerText = '💎';
+                        this.classList.add('open-gem');
+                        playSound(800, 'sine', 0.1);
+                    } else {
+                        this.innerText = '💣';
+                        this.classList.add('open-bomb');
+                        playSound(150, 'sawtooth', 0.3);
+                    }
+                };
+                grid.appendChild(cell);
+            }
+        }
+
+        function updateBalance() {
+            document.getElementById('userBalance').innerText = balance.toFixed(2);
+            localStorage.setItem('userBalance', balance.toFixed(2));
+        }
+
+        initMines();
+    </script>
 </body>
 </html>
 
