@@ -27,6 +27,29 @@
         .badge { background: #22c55e; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .hidden { display: none; }
         .action-inputs { display: flex; gap: 8px; align-items: center; }
+
+        /* PİN KOD GENERATOR Uİ */
+        .pin-display-box {
+            background: #0f172a;
+            border: 2px dashed #eab308;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .pin-code-text {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: #4ade80;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .pin-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -47,6 +70,22 @@
     <div id="dashboardSection" class="hidden">
         
         <h2>👑 Admin İdarəetmə Paneli <span class="badge">CANLI</span></h2>
+
+        <!-- 6 RƏQƏMLİ GİRİŞ KODU GENERATORU -->
+        <div class="card">
+            <h3>🔑 Oyunçu Giriş Kodu (6 Rəqəmli PİN)</h3>
+            <p style="font-size: 13px; color: #94a3b8;">Buradan yeni kod yaradıb oyunçuya göndərə bilərsiniz.</p>
+            
+            <div class="pin-display-box">
+                <div style="font-size: 12px; color: #94a3b8;">Cari Aktiv Kod:</div>
+                <div id="activePinDisplay" class="pin-code-text">------</div>
+                <div class="pin-actions">
+                    <button class="btn-success" onclick="generateNewPin()">YENİ KOD YARAT 🎲</button>
+                    <button onclick="copyPin()">Kodu Kopyala 📋</button>
+                    <button class="btn-danger" onclick="deletePin()">Kodu Sıfırla 🗑️</button>
+                </div>
+            </div>
+        </div>
 
         <!-- CANLI BALANS VƏ İSTİFADƏÇİ İDARƏETMƏSİ -->
         <div class="card">
@@ -112,8 +151,45 @@
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             startLiveTracking();
+            loadActivePin();
         } else {
             document.getElementById('errorMsg').innerText = "İstifadəçi adı və ya şifrə yanlışdır!";
+        }
+    }
+
+    // --- 6 RƏQƏMLİ PİN KOD MƏNTİQİ ---
+    function loadActivePin() {
+        const currentPin = localStorage.getItem('gameAccessPin');
+        if (currentPin) {
+            document.getElementById('activePinDisplay').innerText = currentPin;
+        } else {
+            document.getElementById('activePinDisplay').innerText = "YOXDUR";
+        }
+    }
+
+    function generateNewPin() {
+        // 100000 - 999999 arası təsadüfi 6 rəqəmli kod yarat
+        const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
+        localStorage.setItem('gameAccessPin', randomPin);
+        document.getElementById('activePinDisplay').innerText = randomPin;
+        alert("Yeni 6 rəqəmli kod yaradıldı: " + randomPin);
+    }
+
+    function copyPin() {
+        const pin = localStorage.getItem('gameAccessPin');
+        if (pin) {
+            navigator.clipboard.writeText(pin);
+            alert("Kod müqəvaya kopyalandı: " + pin);
+        } else {
+            alert("Kopyalamaq üçün aktiv kod yoxdur!");
+        }
+    }
+
+    function deletePin() {
+        if (confirm("Giriş kodunu silmək istədiyinizdən əminsiniz? (Oyunçu daxil ola bilməyəcək)")) {
+            localStorage.removeItem('gameAccessPin');
+            document.getElementById('activePinDisplay').innerText = "YOXDUR";
+            alert("Kod silindi!");
         }
     }
 
