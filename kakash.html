@@ -1,95 +1,135 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kral Games Admin Panel 🔒</title>
-  <style>
-    body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
-    .box { background: #1e293b; padding: 20px; border-radius: 12px; margin: 15px auto; border: 1px solid #334155; max-width: 400px; }
-    input, button { padding: 12px; margin: 8px 0; border-radius: 8px; border: none; width: 90%; font-size: 16px; }
-    input { background: #0f172a; color: white; border: 1px solid #475569; text-align: center; }
-    button { background: #2563eb; color: white; cursor: pointer; font-weight: bold; }
-    button:active { transform: scale(0.98); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kral Games Admin Panel</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
+        h2, h3 { color: #ffd700; margin-top: 0; }
+        .login-box { max-width: 400px; margin: 80px auto; text-align: center; }
+        input[type="text"], input[type="password"], input[type="number"] {
+            width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px;
+        }
+        button { background: #eab308; color: #000; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; }
+        button:hover { background: #ca8a04; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #334155; padding: 12px; text-align: left; }
+        th { background: #0f172a; color: #ffd700; }
+        .badge { background: #22c55e; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-  <!-- Giriş Paneli -->
-  <div id="login-box" class="box">
-    <h2>🔑 Admin Girişi</h2>
-    <input type="text" id="user" placeholder="İstifadəçi adı"><br>
-    <input type="password" id="pass" placeholder="Şifrə"><br>
-    <button onclick="login()">Giriş Et</button>
-  </div>
+<div class="container">
 
-  <!-- İdarəetmə Paneli -->
-  <div id="admin-panel" style="display: none;">
-    <h2>👑 Admin İdarə Paneli</h2>
-    
-    <!-- Kod Yaradıcı -->
-    <div class="box">
-      <h3>🎟️ Kod Yarat</h3>
-      <input type="number" id="code-amount" placeholder="Məbləğ təyin et (₼)" step="0.50">
-      <button onclick="generateCode()">6 Rəqəmli Kod Yarat</button>
-      <div id="generated-code-display" style="font-size: 22px; color: #4ade80; margin-top: 10px; font-weight: bold;"></div>
+    <!-- 1. GİRİŞ PANELİ (TƏHLÜKƏSİZLİK) -->
+    <div id="loginSection" class="card login-box">
+        <h2>👑 Kral Games Admin 🔒</h2>
+        <p>İdaretmə panelinə daxil olun</p>
+        <input type="text" id="adminUser" placeholder="İstifadəçi adı">
+        <input type="password" id="adminPass" placeholder="Şifrə">
+        <button onclick="login()">Daxil Ol 🚀</button>
+        <p id="errorMsg" style="color: #ef4444; margin-top: 10px;"></p>
     </div>
 
-    <!-- Şans / RTP Ayarı -->
-    <div class="box">
-      <h3>🎛️ Ümumi Uduş Şansı (RTP %)</h3>
-      <p style="color: #94a3b8; font-size: 14px;">0-100 arası dəyər yazın (Məsələn: 15)</p>
-      <input type="number" id="win-rate" min="0" max="100" placeholder="Şans %">
-      <button onclick="setWinRate()" style="background: #16a34a;">Yadda Saxla</button>
+    <!-- 2. ƏSAS ADMİN İDARƏETMƏ PANELSİ -->
+    <div id="dashboardSection" class="hidden">
+        
+        <h2>👑 Admin İdarəetmə Paneli <span class="badge">CANLI</span></h2>
+
+        <!-- CANLI BALANS VƏ İSTİFADƏÇİ CƏDVƏLİ -->
+        <div class="card">
+            <h3>👥 Canlı İstifadəçi İzləmə</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>İstifadəçi</th>
+                        <th>Cari Balans</th>
+                        <th>Status</th>
+                        <th>Balans Artır / Çıxar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Oyunçu #1 (Telegram)</td>
+                        <td id="liveBalance" style="color: #4ade80; font-weight: bold; font-size: 18px;">10.00 ₼</td>
+                        <td><span class="badge">Aktivdir</span></td>
+                        <td>
+                            <input type="number" id="manualBalance" placeholder="Məbləğ (məs: 50)" style="width: 120px; padding: 5px;">
+                            <button onclick="updateUserBalance()" style="width: auto; padding: 6px 12px;">Tətbiq et</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- OYUN ŞANS VƏ RTP TƏNZİMLƏMƏSİ -->
+        <div class="card">
+            <h3>⚙️ Oyun Qazanma Şansları (RTP)</h3>
+            
+            <label>Meyvə Oyunu Qazanma Şansı (%):</label>
+            <input type="number" id="fruitWinRate" value="40" min="0" max="100">
+            
+            <label style="margin-top: 10px; display: block;">Mines Oyunu Mina Sayı (Çətinlik):</label>
+            <input type="number" id="mineCount" value="3" min="1" max="24">
+
+            <button onclick="saveSettings()" style="margin-top: 15px;">Ayarları Yadda Saxla 💾</button>
+        </div>
+
     </div>
-  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
-      authDomain: "game-44f1a.firebaseapp.com",
-      projectId: "game-44f1a",
-      storageBucket: "game-44f1a.firebasestorage.app",
-      messagingSenderId: "121003848252",
-      appId: "1:121003848252:web:b9b2cea6c9d9682e89c939"
-    };
+<script>
+    // Giriş məlumatları (əvvəlki kimi)
+    const USER = "Escobar211_98";
+    const PASS = "AA211_48";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    function login() {
+        const u = document.getElementById('adminUser').value;
+        const p = document.getElementById('adminPass').value;
 
-    window.login = () => {
-      const u = document.getElementById("user").value.trim();
-      const p = document.getElementById("pass").value.trim();
+        if (u === USER && p === PASS) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            startLiveTracking();
+        } else {
+            document.getElementById('errorMsg').innerText = "İstifadəçi adı və ya şifrə yanlışdır!";
+        }
+    }
 
-      if (u === "Escobar211_98" && p === "AA211_48") {
-        document.getElementById("login-box").style.display = "none";
-        document.getElementById("admin-panel").style.display = "block";
-      } else {
-        alert("Xəta: İstifadəçi adı və ya şifrə yanlışdır!");
-      }
-    };
+    // Canlı balans izləmə
+    function startLiveTracking() {
+        setInterval(() => {
+            let currentBal = localStorage.getItem('userBalance') || '10.00';
+            document.getElementById('liveBalance').innerText = parseFloat(currentBal).toFixed(2) + ' ₼';
+        }, 1000);
+    }
 
-    window.generateCode = async () => {
-      const amt = parseFloat(document.getElementById("code-amount").value);
-      if (!amt || amt <= 0) return alert("Düzgün məbləğ daxil edin!");
+    // Balansı əllə dəyişmək
+    function updateUserBalance() {
+        let val = document.getElementById('manualBalance').value;
+        if(val !== "") {
+            localStorage.setItem('userBalance', parseFloat(val).toFixed(2));
+            alert("Balans yeniləndi: " + val + " ₼");
+        }
+    }
 
-      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await setDoc(doc(db, "codes", randomCode), { amount: amt });
+    // Şans ayarlarını saxla
+    function saveSettings() {
+        let fruitRate = document.getElementById('fruitWinRate').value;
+        let mines = document.getElementById('mineCount').value;
+        localStorage.setItem('fruitWinRate', fruitRate);
+        localStorage.setItem('mineCount', mines);
+        alert("Oyun tənzimləmələri yadda saxlanıldı!");
+    }
+</script>
 
-      document.getElementById("generated-code-display").innerText = `KOD: ${randomCode} (${amt.toFixed(2)} ₼)`;
-    };
-
-    window.setWinRate = async () => {
-      const rate = parseInt(document.getElementById("win-rate").value);
-      if (isNaN(rate) || rate < 0 || rate > 100) return alert("Şans dərəcəsi 0 və 100 arasında olmalıdır!");
-
-      await setDoc(doc(db, "settings", "rtp"), { winRate: rate });
-      alert(`Uduş şansı ${rate}% olaraq yeniləndi!`);
-    };
-  </script>
 </body>
 </html>
 
