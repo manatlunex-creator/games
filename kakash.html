@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kral Games Admin Panel 🔒</title>
+  <style>
+    body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
+    .box { background: #1e293b; padding: 20px; border-radius: 12px; margin: 15px auto; border: 1px solid #334155; max-width: 400px; }
+    input, button { padding: 12px; margin: 8px 0; border-radius: 8px; border: none; width: 90%; font-size: 16px; }
+    input { background: #0f172a; color: white; border: 1px solid #475569; text-align: center; }
+    button { background: #2563eb; color: white; cursor: pointer; font-weight: bold; }
+    button:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+
+  <!-- Giriş Paneli -->
+  <div id="login-box" class="box">
+    <h2>🔑 Admin Girişi</h2>
+    <input type="text" id="user" placeholder="İstifadəçi adı"><br>
+    <input type="password" id="pass" placeholder="Şifrə"><br>
+    <button onclick="login()">Giriş Et</button>
+  </div>
+
+  <!-- İdarəetmə Paneli -->
+  <div id="admin-panel" style="display: none;">
+    <h2>👑 Admin İdarə Paneli</h2>
+    
+    <!-- Kod Yaradıcı -->
+    <div class="box">
+      <h3>🎟️ Kod Yarat</h3>
+      <input type="number" id="code-amount" placeholder="Məbləğ təyin et (₼)" step="0.50">
+      <button onclick="generateCode()">6 Rəqəmli Kod Yarat</button>
+      <div id="generated-code-display" style="font-size: 22px; color: #4ade80; margin-top: 10px; font-weight: bold;"></div>
+    </div>
+
+    <!-- Şans / RTP Ayarı -->
+    <div class="box">
+      <h3>🎛️ Ümumi Uduş Şansı (RTP %)</h3>
+      <p style="color: #94a3b8; font-size: 14px;">0-100 arası dəyər yazın (Məsələn: 15)</p>
+      <input type="number" id="win-rate" min="0" max="100" placeholder="Şans %">
+      <button onclick="setWinRate()" style="background: #16a34a;">Yadda Saxla</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
+      authDomain: "game-44f1a.firebaseapp.com",
+      projectId: "game-44f1a",
+      storageBucket: "game-44f1a.firebasestorage.app",
+      messagingSenderId: "121003848252",
+      appId: "1:121003848252:web:b9b2cea6c9d9682e89c939"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.login = () => {
+      const u = document.getElementById("user").value.trim();
+      const p = document.getElementById("pass").value.trim();
+
+      if (u === "Escobar211_98" && p === "AA211_48") {
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("admin-panel").style.display = "block";
+      } else {
+        alert("Xəta: İstifadəçi adı və ya şifrə yanlışdır!");
+      }
+    };
+
+    window.generateCode = async () => {
+      const amt = parseFloat(document.getElementById("code-amount").value);
+      if (!amt || amt <= 0) return alert("Düzgün məbləğ daxil edin!");
+
+      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await setDoc(doc(db, "codes", randomCode), { amount: amt });
+
+      document.getElementById("generated-code-display").innerText = `KOD: ${randomCode} (${amt.toFixed(2)} ₼)`;
+    };
+
+    window.setWinRate = async () => {
+      const rate = parseInt(document.getElementById("win-rate").value);
+      if (isNaN(rate) || rate < 0 || rate > 100) return alert("Şans dərəcəsi 0 və 100 arasında olmalıdır!");
+
+      await setDoc(doc(db, "settings", "rtp"), { winRate: rate });
+      alert(`Uduş şansı ${rate}% olaraq yeniləndi!`);
+    };
+  </script>
+</body>
+</html>
+
