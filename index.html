@@ -114,7 +114,7 @@
 
         .btn-spin-slot { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 900; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); text-transform: uppercase; margin-top: 5px; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #121721; border-top: 1px solid #1e2638; display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #121721; border-top: 1px solid #1e2638; display: flex; justify-around; padding: 8px 0; z-index: 100; }
         .nav-item { color: #64748b; display: flex; flex-direction: column; align-items: center; font-size: 10px; text-decoration: none; gap: 2px; }
         .nav-item.active { color: #f59e0b; font-weight: 700; }
     </style>
@@ -146,7 +146,7 @@
                 <div class="bal-icon">₼</div>
                 <span style="font-size: 12px; color: #94a3b8; font-weight:600;">Əsas Balans:</span>
             </div>
-            <div class="bal-amount"><span id="mainBalanceDisplay">10.00</span> ₼</div>
+            <div class="bal-amount"><span id="mainBalanceDisplay">0.00</span> ₼</div>
         </div>
 
         <div class="cat-scroll">
@@ -176,12 +176,13 @@
             <a href="https://t.me/gamesadmin1" target="_blank" class="nav-item">💬 Dəstək</a>
         </div>
     </div>
-        <!-- MINES MODAL -->
+
+    <!-- MINES MODAL -->
     <div id="minesModal" class="game-modal">
         <div class="modal-top">
             <button class="back-btn" onclick="closeGame('minesModal')">❮ Geri</button>
             <div class="modal-logo">KRAL <span>× MINES</span></div>
-            <div class="modal-bal"><span class="gameBal">10.00</span> ₼</div>
+            <div class="modal-bal"><span class="gameBal">0.00</span> ₼</div>
         </div>
 
         <div class="mines-container">
@@ -219,7 +220,7 @@
         <div class="modal-top">
             <button class="back-btn" onclick="closeGame('fruitModal')">❮ Geri</button>
             <div class="modal-logo">LUCKY <span>FRUITS</span></div>
-            <div class="modal-bal"><span class="gameBal">10.00</span> ₼</div>
+            <div class="modal-bal"><span class="gameBal">0.00</span> ₼</div>
         </div>
 
         <div class="fruits-container">
@@ -278,198 +279,11 @@
     </div>
 
     <script>
-        // ADMIN PİN KODU (Bunu dəyişə bilərsən)
-        const ADMIN_PIN = "123456";
+        let balance = 0;
+        let currentActivePin = null;
 
-        function verifyPin() {
-            const input = document.getElementById('pinInput').value;
-            if (input === ADMIN_PIN) {
-                AudioFX.playWin();
-                document.getElementById('loginModal').style.display = 'none';
-                document.getElementById('appContent').style.display = 'block';
-            } else {
-                AudioFX.playBomb();
-                alert('Giriş kodu yanlışdır!');
-            }
-        }
-
-        // SES SİSTEMİ (WebAudio API)
-        const AudioFX = {
-            ctx: null,
-            init() {
-                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            },
-            playClick() {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.04);
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.04);
-            },
-            playGem() {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1046.50, this.ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
-            },
-            playBomb() {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(30, this.ctx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.3);
-            },
-            playWin() {
-                this.init();
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((freq, i) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.08);
-                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime + i * 0.08);
-                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.08 + 0.2);
-                    osc.connect(gain); gain.connect(this.ctx.destination);
-                    osc.start(this.ctx.currentTime + i * 0.08); osc.stop(this.ctx.currentTime + i * 0.08 + 0.2);
-                });
-            },
-            playReel() {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.03);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.03);
-            }
-        };
-
-        let balance = parseFloat(localStorage.getItem('userBalance')) || 10.00;
-        function syncBalance() {
-            document.getElementById('mainBalanceDisplay').innerText = balance.toFixed(2);
-            document.querySelectorAll('.gameBal').forEach(el => el.innerText = balance.toFixed(2));
-            localStorage.setItem('userBalance', balance.toFixed(2));
-        }
-        syncBalance();
-
-        function openGame(id) { AudioFX.playClick(); document.getElementById(id).classList.add('active'); if(id === 'minesModal') resetMinesUI(); }
-        function closeGame(id) { AudioFX.playClick(); document.getElementById(id).classList.remove('active'); }
-
-        /* MINES LOGIC */
-        const TOTAL_TILES = 25, BOMB_COUNT = 3;
-        const multipliers = [1.12, 1.28, 1.48, 1.72, 2.02, 2.40, 2.88, 3.50, 4.30, 5.40, 7.00, 9.20];
-        let minePositions = [], revealedCount = 0, isMinesActive = false, currentMinesBet = 1.00;
-
-        function renderMultipliers() {
-            const bar = document.getElementById('multBar'); bar.innerHTML = '';
-            multipliers.forEach((m, idx) => {
-                const item = document.createElement('div');
-                item.className = `mult-item ${idx === revealedCount - 1 ? 'active' : ''}`;
-                item.innerHTML = `<div class="step">${idx + 1} ⭐</div><div class="val">x${m.toFixed(2)}</div>`;
-                bar.appendChild(item);
-            });
-        }
-
-        function resetMinesUI() {
-            isMinesActive = false; revealedCount = 0;
-            const board = document.getElementById('minesBoard'); board.innerHTML = '';
-            for (let i = 0; i < TOTAL_TILES; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'mine-tile disabled';
-                board.appendChild(tile);
-            }
-            renderMultipliers();
-            const btn = document.getElementById('minesActionBtn');
-            btn.innerText = 'MƏRC ET ⭐'; btn.className = 'btn-main-action';
-        }
-
-        function handleMinesAction() {
-            AudioFX.playClick();
-            if (!isMinesActive) {
-                const betVal = parseFloat(document.getElementById('minesBetInput').value);
-                if (isNaN(betVal) || betVal <= 0) return alert('Düzgün mərc məbləği daxil edin!');
-                if (balance < betVal) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
-
-                currentMinesBet = betVal; balance -= currentMinesBet; syncBalance();
-                isMinesActive = true; revealedCount = 0;
-
-                minePositions = [];
-                while(minePositions.length < BOMB_COUNT) {
-                    let rand = Math.floor(Math.random() * TOTAL_TILES);
-                    if(!minePositions.includes(rand)) minePositions.push(rand);
-                }
-
-                const board = document.getElementById('minesBoard'); board.innerHTML = '';
-                for (let i = 0; i < TOTAL_TILES; i++) {
-                    const tile = document.createElement('div');
-                    tile.className = 'mine-tile';
-                    tile.onclick = () => selectTile(i, tile);
-                    board.appendChild(tile);
-                }
-                renderMultipliers();
-                const btn = document.getElementById('minesActionBtn');
-                btn.innerText = 'ÇIXARIŞ ET'; btn.className = 'btn-main-action btn-cashout';
-            } else {
-                if (revealedCount === 0) return alert('Qazancı götürmək üçün ən azı 1 ulduz açmalısınız!');
-                const mult = multipliers[revealedCount - 1];
-                const winAmount = currentMinesBet * mult;
-                balance += winAmount; syncBalance(); AudioFX.playWin();
-                alert(`Təbriklər! Qazandınız: ${winAmount.toFixed(2)} ₼`);
-                resetMinesUI();
-            }
-        }
-
-        function selectTile(index, tileEl) {
-            if (!isMinesActive || tileEl.classList.contains('revealed-star') || tileEl.classList.contains('revealed-bomb')) return;
-
-            if (minePositions.includes(index)) {
-                AudioFX.playBomb();
-                tileEl.classList.add('revealed-bomb'); isMinesActive = false;
-                const tiles = document.querySelectorAll('#minesBoard .mine-tile');
-                minePositions.forEach(pos => tiles[pos].classList.add('revealed-bomb'));
-                setTimeout(() => { alert('Bomba patladı! Oyunu uduzdunuz.'); resetMinesUI(); }, 300);
-            } else {
-                AudioFX.playGem();
-                tileEl.classList.add('revealed-star'); revealedCount++; renderMultipliers();
-                const currentMult = multipliers[revealedCount - 1];
-                const currentWin = currentMinesBet * currentMult;
-                document.getElementById('minesActionBtn').innerText = `ÇIXARIŞ (${currentWin.toFixed(2)} ₼)`;
-            }
-        }
-
-        function adjustBet(inputId, factor) {
-            AudioFX.playClick();
-            const input = document.getElementById(inputId);
-            let val = parseFloat(input.value) || 1.0;
-            if (factor === 0.5) val = Math.max(0.1, val / 2);
-            else if (factor === 2) val = val * 2;
-            input.value = val.toFixed(2);
-        }
-
-        function setBetValue(inputId, val) {
-            AudioFX.playClick();
-            document.getElementById(inputId).value = val.toFixed(2);
-        }
-
-        /* FRUITS SLOT LOGIC */
+        // ADMİN PANELİ BAZASINI YOXLAYAN GİRİŞ FUNK
+                /* FRUITS SLOT LOGIC */
         let currentSlotBet = 0.50;
         const slotIcons = ['🍉', '7️⃣', '🍇', '🔮', '🍋', '🍒', '🍊'];
         const payMultipliers = { '🍉': 100, '7️⃣': 500, '🍇': 20, '🔮': 10, '🍋': 8, '🍒': 8, '🍊': 5 };
@@ -540,4 +354,3 @@
 </body>
 </html>
 
-    
