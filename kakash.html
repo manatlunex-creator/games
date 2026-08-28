@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kral Games - Admin Control</title>
+    <title>Kral Games - İdarəetmə Paneli</title>
     <style>
         body { background: #0b0e14; color: #fff; font-family: sans-serif; padding: 20px; }
         .card { background: #121721; padding: 20px; border-radius: 12px; border: 1px solid #1e2638; margin-bottom: 20px; }
-        h2 { color: #f59e0b; font-size: 18px; margin-bottom: 12px; }
-        input { background: #1c2538; border: 1px solid #28344d; color: #fff; padding: 10px; border-radius: 6px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-        button { background: #10b981; border: none; color: #fff; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+        h2 { color: #f59e0b; font-size: 16px; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid #1e2638; padding-bottom: 6px; }
+        .field { margin-bottom: 12px; }
+        label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px; }
+        input { background: #1c2538; border: 1px solid #28344d; color: #fff; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        button { background: #10b981; border: none; color: #fff; padding: 12px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #1e2638; padding: 8px; text-align: left; font-size: 14px; }
         th { background: #161d2a; color: #f59e0b; }
@@ -18,16 +20,57 @@
 </head>
 <body>
 
+    <!-- MEYVƏ OYUNU & JACKPOT AYARLARI -->
     <div class="card">
-        <h2>🎰 Meyvə Oyunu Jackpot Düşmə Şansı (%)</h2>
-        <input type="number" id="jackpotChanceInput" placeholder="Nümaynamespace: 5 (yəni 5% şans)">
-        <button onclick="saveJackpotChance()">ŞANSI YENİLƏ</button>
+        <h2>🎰 Meyvə Oyunu Və Jackpot Şansları</h2>
+        <div class="field">
+            <label>Meyvə Oyunu Uduş Şansı (%)</label>
+            <input type="number" id="fruitChance">
+        </div>
+        <div class="field">
+            <label>Grand Jackpot Düşmə Şansı (%)</label>
+            <input type="number" id="jackpotChance">
+        </div>
+        <button onclick="saveFruitSettings()">MEYVƏ ŞANSLARINI YENİLƏ</button>
     </div>
 
+    <!-- MINES OYUNU AYARLARI -->
+    <div class="card">
+        <h2>💣 Mines Oyunu Şans İdarəetməsi</h2>
+        <div class="field">
+            <label>Bombaya Düşmə Şansı (%) — Nə qədər çox olsa, uduzmaq o qədər tez olar</label>
+            <input type="number" id="minesChance">
+        </div>
+        <button onclick="saveMinesSettings()">MINES ŞANSINI YENİLƏ</button>
+    </div>
+
+    <!-- ŞANS ÇARXI AYARLARI -->
+    <div class="card">
+        <h2>🎡 Şans Çarxı Mükafat Şansları (%)</h2>
+        <div class="field">
+            <label>Bomba Düşmə Şansı (%)</label>
+            <input type="number" id="wBomb">
+        </div>
+        <div class="field">
+            <label>5 ₼ Düşmə Şansı (%)</label>
+            <input type="number" id="w5">
+        </div>
+        <div class="field">
+            <label>20 ₼ Düşmə Şansı (%)</label>
+            <input type="number" id="w20">
+        </div>
+        <div class="field">
+            <label>100 ₼ Düşmə Şansı (%)</label>
+            <input type="number" id="w100">
+        </div>
+        <button onclick="saveWheelSettings()">ÇARX ŞANSLARINI YENİLƏ</button>
+    </div>
+
+    <!-- İSTİFADƏÇİ İDARƏSİ -->
     <div class="card">
         <h2>👤 Yeni İstifadəçi (PIN) Yarat / Balans Artır</h2>
-        <input type="text" id="newPin" placeholder="6 rəqəmli PIN (məs: 123456)" maxlength="6">
-        <input type="number" id="newBal" placeholder="Başlanğıc Balansı (AZN)">
+        <input type="text" id="newPin" placeholder="6 rəqəmli PIN (məs: 123456)" maxlength="6" style="margin-bottom:8px;">
+        <input type="number" id="newBal" placeholder="Başlanğıc Balansı (AZN)" style="margin-bottom:8px;">
         <button onclick="addUser()">YADA SAXLA</button>
     </div>
 
@@ -61,8 +104,34 @@
                 `;
             }
 
-            const chance = localStorage.getItem('kral_jackpot_chance') || 5;
-            document.getElementById('jackpotChanceInput').value = chance;
+            // Dəyərləri xanalara doldur
+            document.getElementById('fruitChance').value = localStorage.getItem('kral_fruit_chance') || 30;
+            document.getElementById('jackpotChance').value = localStorage.getItem('kral_jackpot_chance') || 5;
+            document.getElementById('minesChance').value = localStorage.getItem('kral_mines_chance') || 20;
+            
+            document.getElementById('wBomb').value = localStorage.getItem('kral_wheel_bomb') || 60;
+            document.getElementById('w5').value = localStorage.getItem('kral_wheel_5') || 45;
+            document.getElementById('w20').value = localStorage.getItem('kral_wheel_20') || 30;
+            document.getElementById('w100').value = localStorage.getItem('kral_wheel_100') || 1;
+        }
+
+        function saveFruitSettings() {
+            localStorage.setItem('kral_fruit_chance', document.getElementById('fruitChance').value);
+            localStorage.setItem('kral_jackpot_chance', document.getElementById('jackpotChance').value);
+            alert('Meyvə və Jackpot şansları yeniləndi!');
+        }
+
+        function saveMinesSettings() {
+            localStorage.setItem('kral_mines_chance', document.getElementById('minesChance').value);
+            alert('Mines şansı yeniləndi!');
+        }
+
+        function saveWheelSettings() {
+            localStorage.setItem('kral_wheel_bomb', document.getElementById('wBomb').value);
+            localStorage.setItem('kral_wheel_5', document.getElementById('w5').value);
+            localStorage.setItem('kral_wheel_20', document.getElementById('w20').value);
+            localStorage.setItem('kral_wheel_100', document.getElementById('w100').value);
+            alert('Çarx mükafat şansları yeniləndi!');
         }
 
         function addUser() {
@@ -86,12 +155,6 @@
             delete db[pin];
             localStorage.setItem('kral_users_db', JSON.stringify(db));
             loadAdminData();
-        }
-
-        function saveJackpotChance() {
-            const chance = document.getElementById('jackpotChanceInput').value;
-            localStorage.setItem('kral_jackpot_chance', chance);
-            alert(`Jackpot düşmə şansı ${chance}% olaraq yeniləndi!`);
         }
 
         loadAdminData();
