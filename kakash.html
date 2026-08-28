@@ -1,163 +1,194 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kral Games - İdarəetmə Paneli</title>
-    <style>
-        body { background: #0b0e14; color: #fff; font-family: sans-serif; padding: 20px; }
-        .card { background: #121721; padding: 20px; border-radius: 12px; border: 1px solid #1e2638; margin-bottom: 20px; }
-        h2 { color: #f59e0b; font-size: 16px; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid #1e2638; padding-bottom: 6px; }
-        .field { margin-bottom: 12px; }
-        label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px; }
-        input { background: #1c2538; border: 1px solid #28344d; color: #fff; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-        button { background: #10b981; border: none; color: #fff; padding: 12px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #1e2638; padding: 8px; text-align: left; font-size: 14px; }
-        th { background: #161d2a; color: #f59e0b; }
-        .btn-del { background: #ef4444; width: auto; padding: 4px 8px; font-size: 12px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kral Games - Admin Panel</title>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: #0d0d11; color: #fff; padding: 15px; display: flex; justify-content: center; }
+    .admin-card { width: 100%; max-width: 500px; background: #16161e; border: 2px solid #ff2a2a; border-radius: 15px; padding: 20px; box-shadow: 0 0 20px rgba(255, 42, 42, 0.3); }
+    h2, h3 { color: #f1c40f; text-align: center; margin-bottom: 15px; }
+    
+    /* Login */
+    #login-box { display: block; text-align: center; }
+    input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ff4444; background: #09090d; color: #fff; font-size: 15px; text-align: center; }
+    .btn { width: 90%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(45deg, #ff2a2a, #ff7676); color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    
+    /* Panel */
+    #panel-box { display: none; }
+    .section { background: #0a0a0f; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+    .section h4 { color: #2ecc71; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+    .btn-green { background: linear-gradient(45deg, #2ecc71, #27ae60); }
+    .btn-red { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+    .btn-sm { width: 48%; display: inline-block; padding: 10px; font-size: 13px; }
+    .list-item { display: flex; justify-content: space-between; align-items: center; background: #1a1a24; padding: 8px 12px; border-radius: 6px; margin-top: 5px; }
+  </style>
 </head>
 <body>
 
-    <!-- MEYVƏ OYUNU & JACKPOT AYARLARI -->
-    <div class="card">
-        <h2>🎰 Meyvə Oyunu Və Jackpot Şansları</h2>
-        <div class="field">
-            <label>Meyvə Oyunu Uduş Şansı (%)</label>
-            <input type="number" id="fruitChance">
-        </div>
-        <div class="field">
-            <label>Grand Jackpot Düşmə Şansı (%)</label>
-            <input type="number" id="jackpotChance">
-        </div>
-        <button onclick="saveFruitSettings()">MEYVƏ ŞANSLARINI YENİLƏ</button>
+  <div class="admin-card">
+    <h2>👑 KRAL GAMES ADMIN 👑</h2>
+
+    <!-- GİRİŞ FORMU -->
+    <div id="login-box">
+      <input type="text" id="adminUser" placeholder="İstifadəçi Adı">
+      <input type="password" id="adminPass" placeholder="Şifrə">
+      <button class="btn" onclick="loginAdmin()">PANELƏ GİRİŞ</button>
+      <div id="login-err" style="color:red; margin-top:10px; font-weight:bold;"></div>
     </div>
 
-    <!-- MINES OYUNU AYARLARI -->
-    <div class="card">
-        <h2>💣 Mines Oyunu Şans İdarəetməsi</h2>
-        <div class="field">
-            <label>Bombaya Düşmə Şansı (%) — Nə qədər çox olsa, uduzmaq o qədər tez olar</label>
-            <input type="number" id="minesChance">
+    <!-- İDARƏ PANENİ -->
+    <div id="panel-box">
+      
+      <!-- 1. PIN & Giriş Kodları İdarəsi -->
+      <div class="section">
+        <h4>🔑 PIN Giriş Kodları</h4>
+        <input type="text" id="newPin" placeholder="Yeni PIN (məs: 2110)">
+        <button class="btn btn-green" onclick="addPin()">PIN KODU ƏLAVƏ ET</button>
+        <div id="pinList" style="margin-top: 10px;"></div>
+      </div>
+
+      <!-- 2. Balans İdarəsi -->
+      <div class="section">
+        <h4>💰 Balans Artırmaq / Silmək</h4>
+        <input type="text" id="targetPin" placeholder="PIN Kodu (İstifadəçi)">
+        <input type="number" id="balanceAmt" placeholder="Məbləğ (AZN)">
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-green btn-sm" onclick="updateUserBal(true)">BALANS ARTIR</button>
+          <button class="btn btn-red btn-sm" onclick="updateUserBal(false)">BALANS SİL</button>
         </div>
-        <button onclick="saveMinesSettings()">MINES ŞANSINI YENİLƏ</button>
+      </div>
+
+      <!-- 3. Oyunda Şans və Jackpot Ayarları -->
+      <div class="section">
+        <h4>🎰 Oyunda Şanslar və Jackpot</h4>
+        <label style="font-size: 12px; color: #aaa;">Uduş Şansı (0% - 100%):</label>
+        <input type="number" id="winRate" placeholder="Nüm: 30" min="0" max="100">
+        <label style="font-size: 12px; color: #aaa;">Cari Jackpot (AZN):</label>
+        <input type="number" id="jackpotInput" placeholder="Nüm: 350">
+        <button class="btn" onclick="saveGameSettings()">AYARLARI YADDA SAXLA</button>
+      </div>
+
+      <button class="btn btn-red" onclick="location.reload()" style="width: 100%;">ÇIXIŞ ET</button>
     </div>
+  </div>
 
-    <!-- ŞANS ÇARXI AYARLARI -->
-    <div class="card">
-        <h2>🎡 Şans Çarxı Mükafat Şansları (%)</h2>
-        <div class="field">
-            <label>Bomba Düşmə Şansı (%)</label>
-            <input type="number" id="wBomb">
-        </div>
-        <div class="field">
-            <label>5 ₼ Düşmə Şansı (%)</label>
-            <input type="number" id="w5">
-        </div>
-        <div class="field">
-            <label>20 ₼ Düşmə Şansı (%)</label>
-            <input type="number" id="w20">
-        </div>
-        <div class="field">
-            <label>100 ₼ Düşmə Şansı (%)</label>
-            <input type="number" id="w100">
-        </div>
-        <button onclick="saveWheelSettings()">ÇARX ŞANSLARINI YENİLƏ</button>
-    </div>
+  <script>
+    // Firebase Konfiqurasiya
+    const firebaseConfig = {
+      apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
+      authDomain: "game-44f1a.firebaseapp.com",
+      databaseURL: "https://game-44f1a-default-rtdb.firebaseio.com",
+      projectId: "game-44f1a",
+      storageBucket: "game-44f1a.firebasestorage.app",
+      messagingSenderId: "121003848252",
+      appId: "1:121003848252:web:b9b2cea6c9d9682e89c939"
+    };
 
-    <!-- İSTİFADƏÇİ İDARƏSİ -->
-    <div class="card">
-        <h2>👤 Yeni İstifadəçi (PIN) Yarat / Balans Artır</h2>
-        <input type="text" id="newPin" placeholder="6 rəqəmli PIN (məs: 123456)" maxlength="6" style="margin-bottom:8px;">
-        <input type="number" id="newBal" placeholder="Başlanğıc Balansı (AZN)" style="margin-bottom:8px;">
-        <button onclick="addUser()">YADA SAXLA</button>
-    </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    <div class="card">
-        <h2>📋 Mövcud İstifadəçilər</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>PIN Kod</th>
-                    <th>Balans</th>
-                    <th>Əməliyyat</th>
-                </tr>
-            </thead>
-            <tbody id="userTable"></tbody>
-        </table>
-    </div>
+    // 1. Panel Girişi
+    function loginAdmin() {
+      const u = document.getElementById("adminUser").value.trim();
+      const p = document.getElementById("adminPass").value.trim();
 
-    <script>
-        function loadAdminData() {
-            const db = JSON.parse(localStorage.getItem('kral_users_db')) || {};
-            const tbody = document.getElementById('userTable');
-            tbody.innerHTML = '';
+      if(u === "Escobar211_98" && p === "AA211_48") {
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("panel-box").style.display = "block";
+        loadPins();
+        loadSettings();
+      } else {
+        document.getElementById("login-err").innerText = "İstifadəçi adı və ya şifrə səhvdir!";
+      }
+    }
 
-            for (let pin in db) {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>${pin}</b></td>
-                        <td>${db[pin].balance} ₼</td>
-                        <td><button class="btn-del" onclick="deleteUser('${pin}')">Sil</button></td>
-                    </tr>
-                `;
-            }
+    // 2. PIN Yaratmaq
+    function addPin() {
+      const pin = document.getElementById("newPin").value.trim();
+      if(!pin) return alert("PIN yazın!");
 
-            // Dəyərləri xanalara doldur
-            document.getElementById('fruitChance').value = localStorage.getItem('kral_fruit_chance') || 30;
-            document.getElementById('jackpotChance').value = localStorage.getItem('kral_jackpot_chance') || 5;
-            document.getElementById('minesChance').value = localStorage.getItem('kral_mines_chance') || 20;
-            
-            document.getElementById('wBomb').value = localStorage.getItem('kral_wheel_bomb') || 60;
-            document.getElementById('w5').value = localStorage.getItem('kral_wheel_5') || 45;
-            document.getElementById('w20').value = localStorage.getItem('kral_wheel_20') || 30;
-            document.getElementById('w100').value = localStorage.getItem('kral_wheel_100') || 1;
+      db.ref("pins/" + pin).set({
+        active: true,
+        balance: 0.00
+      }).then(() => {
+        alert("PIN " + pin + " yaradıldı!");
+        document.getElementById("newPin").value = "";
+        loadPins();
+      });
+    }
+
+    // PIN Siyahısını Yükləmək və Silmək
+    function loadPins() {
+      db.ref("pins").on("value", (snapshot) => {
+        const list = document.getElementById("pinList");
+        list.innerHTML = "";
+        snapshot.forEach((child) => {
+          const p = child.key;
+          const val = child.val();
+          const bal = val.balance ? val.balance : 0;
+          list.innerHTML += `
+            <div class="list-item">
+              <span>📌 <b>${p}</b> (Balans: ${bal} AZN)</span>
+              <button style="background:red; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="deletePin('${p}')">SİL</button>
+            </div>
+          `;
+        });
+      });
+    }
+
+    function deletePin(pin) {
+      if(confirm(pin + " PIN kodunu silmək istədiyinizdən əminsiniz?")) {
+        db.ref("pins/" + pin).remove();
+      }
+    }
+
+    // 3. Balans Artırmaq / Silmək
+    function updateUserBal(isAdd) {
+      const pin = document.getElementById("targetPin").value.trim();
+      const amt = parseFloat(document.getElementById("balanceAmt").value);
+
+      if(!pin || isNaN(amt)) return alert("PIN və məbləği tam yazın!");
+
+      db.ref("pins/" + pin).once("value").then((snapshot) => {
+        if(!snapshot.exists()) return alert("Bu PIN tapılmadı!");
+        
+        let currentBal = snapshot.val().balance || 0;
+        let newBal = isAdd ? (currentBal + amt) : (currentBal - amt);
+        if(newBal < 0) newBal = 0;
+
+        db.ref("pins/" + pin + "/balance").set(newBal).then(() => {
+          alert("Balans yeniləndi! Yeni Balans: " + newBal + " AZN");
+        });
+      });
+    }
+
+    // 4. Şans və Jackpot Ayarları
+    function saveGameSettings() {
+      const rate = document.getElementById("winRate").value;
+      const jackpot = document.getElementById("jackpotInput").value;
+
+      db.ref("settings").update({
+        winRate: rate ? parseInt(rate) : 30,
+        jackpot: jackpot ? parseFloat(jackpot) : 250
+      }).then(() => alert("Oyun şansı və Jackpot yadda saxlanıldı!"));
+    }
+
+    function loadSettings() {
+      db.ref("settings").once("value").then((snapshot) => {
+        if(snapshot.exists()) {
+          const data = snapshot.val();
+          if(data.winRate) document.getElementById("winRate").value = data.winRate;
+          if(data.jackpot) document.getElementById("jackpotInput").value = data.jackpot;
         }
-
-        function saveFruitSettings() {
-            localStorage.setItem('kral_fruit_chance', document.getElementById('fruitChance').value);
-            localStorage.setItem('kral_jackpot_chance', document.getElementById('jackpotChance').value);
-            alert('Meyvə və Jackpot şansları yeniləndi!');
-        }
-
-        function saveMinesSettings() {
-            localStorage.setItem('kral_mines_chance', document.getElementById('minesChance').value);
-            alert('Mines şansı yeniləndi!');
-        }
-
-        function saveWheelSettings() {
-            localStorage.setItem('kral_wheel_bomb', document.getElementById('wBomb').value);
-            localStorage.setItem('kral_wheel_5', document.getElementById('w5').value);
-            localStorage.setItem('kral_wheel_20', document.getElementById('w20').value);
-            localStorage.setItem('kral_wheel_100', document.getElementById('w100').value);
-            alert('Çarx mükafat şansları yeniləndi!');
-        }
-
-        function addUser() {
-            const pin = document.getElementById('newPin').value.trim();
-            const bal = parseFloat(document.getElementById('newBal').value) || 0;
-
-            if (pin.length !== 6) return alert('PIN 6 rəqəm olmalıdır!');
-
-            let db = JSON.parse(localStorage.getItem('kral_users_db')) || {};
-            db[pin] = { balance: bal.toFixed(2) };
-            localStorage.setItem('kral_users_db', JSON.stringify(db));
-
-            alert(`PIN: ${pin} təyin olundu. Balans: ${bal} ₼`);
-            document.getElementById('newPin').value = '';
-            document.getElementById('newBal').value = '';
-            loadAdminData();
-        }
-
-        function deleteUser(pin) {
-            let db = JSON.parse(localStorage.getItem('kral_users_db')) || {};
-            delete db[pin];
-            localStorage.setItem('kral_users_db', JSON.stringify(db));
-            loadAdminData();
-        }
-
-        loadAdminData();
-    </script>
+      });
+    }
+  </script>
 </body>
 </html>
