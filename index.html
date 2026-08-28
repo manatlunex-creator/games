@@ -252,22 +252,34 @@
         let currentPin = null;
         let jackpotVal = 145.20;
 
-        function getUsersDB() { return JSON.parse(localStorage.getItem('kral_users_db')) || {}; }
+        function getUsersDB() { 
+            return JSON.parse(localStorage.getItem('kral_users_db')) || {}; 
+        }
 
         function verifyPin() {
-            const pin = document.getElementById('pinInput').value.trim();
+            const pinInput = document.getElementById('pinInput');
+            if (!pinInput) return;
+            
+            const pin = pinInput.value.trim();
+            if (!pin) {
+                alert('Zəhmət olmasa 6 rəqəmli PIN kodu daxil edin!');
+                return;
+            }
+
             const db = getUsersDB();
 
-            if (db[pin]) {
+            if (db && db[pin]) {
                 currentPin = pin;
-                balance = parseFloat(db[pin].balance);
+                let userVal = db[pin];
+                balance = typeof userVal === 'object' ? parseFloat(userVal.balance || 0) : parseFloat(userVal || 0);
+                
                 syncBalance();
                 document.getElementById('loginModal').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
                 drawWheel();
                 checkWheelStatus();
             } else {
-                alert('Daxil edilən PIN kod yanlışdır!');
+                alert('Daxil edilən PIN kod sistemdə tapılmadı! Öncə Admin Paneldən (admin.html) bu PIN koda balans əlavə edin.');
             }
         }
 
@@ -321,63 +333,8 @@
                     const jackChance = parseFloat(localStorage.getItem('kral_jackpot_chance')) || 5; 
                     const fruitChance = parseFloat(localStorage.getItem('kral_fruit_chance')) || 30;
 
-                    // 1. Öncə Jackpot Şansı Yoxlanılır
                     if ((Math.random() * 100) <= jackChance) {
                         const winJack = jackpotVal;
-                        balance += winJack; syncBalance();
-                        document.getElementById('slotWinDisplay').innerText = winJack.toFixed(2) + ' ₼';
-                        alert(`🎉 TEBRİKLƏR! GRAND JACKPOT QAZANDINIZ: ${winJack.toFixed(2)} ₼!`);
-                    } 
-                    // 2. Meyvə Oyununun Öz Standart Uduş Şansı Yoxlanılır
-                    else if ((Math.random() * 100) <= fruitCh
-                                     function openGame(id) { 
-            document.getElementById(id).classList.add('active'); 
-            if(id==='minesModal') resetMines(); 
-            if(id==='wheelModal') checkWheelStatus();
-        }
-        function closeGame(id) { document.getElementById(id).classList.remove('active'); }
-
-        /* MEYVƏ OYUNU & JACKPOT */
-        const slotIcons = ['🍉', '7️⃣', '🍇', '🔮', '🍋', '🍒', '🍊'];
-        const payMultipliers = { '🍉': 100, '7️⃣': 500, '🍇': 20, '🔮': 10, '🍋': 8, '🍒': 8, '🍊': 5 };
-
-        function spinSlot() {
-            if (balance < 1) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
-            balance -= 1; syncBalance();
-            document.getElementById('slotWinDisplay').innerText = '0.00 ₼';
-
-            const cells = [];
-            for(let i=0; i<15; i++) {
-                cells.push(document.getElementById('c' + i));
-                cells[i].classList.remove('win-anim');
-            }
-
-            let ticks = 0;
-            const interval = setInterval(() => {
-                cells.forEach(c => { c.innerText = slotIcons[Math.floor(Math.random() * slotIcons.length)]; });
-                ticks++;
-
-                if (ticks > 14) {
-                    clearInterval(interval);
-                    
-                    const jackChance = parseFloat(localStorage.getItem('kral_jackpot_chance')) || 5; 
-                    const fruitChance = parseFloat(localStorage.getItem('kral_fruit_chance')) || 30;
-
-                    // 1. Öncə Jackpot Şansı Yoxlanılır
-                    if ((Math.random() * 100) <= jackChance) {
-                        const winJack = jackpotVal;
-                        balance += winJack; syncBalance();
-                        document.getElementById('slotWinDisplay').innerText = winJack.toFixed(2) + ' ₼';
-                        alert(`🎉 TEBRİKLƏR! GRAND JACKPOT QAZANDINIZ: ${winJack.toFixed(2)} ₼!`);
-                    } 
-                    // 2. Meyvə Oyununun Öz Standart Uduş Şansı Yoxlanılır
-                    else if ((Math.random() * 100) <= fruitChance) {
-                        const matchedIcon = slotIcons[Math.floor(Math.random() * slotIcons.length)];
-                        cells[1].innerText = matchedIcon;
-                        cells[4].innerText = matchedIcon;
-                        cells[7].innerText = matchedIcon;
-
-                        let winAmt = 1 * (payMultipliers[matchedIcon] || 5);
                         balance += winAmt; syncBalance();
                         document.getElementById('slotWinDisplay').innerText = winAmt.toFixed(2) + ' ₼';
                         [cells[1], cells[4], cells[7]].forEach(c => c.classList.add('win-anim'));
@@ -429,7 +386,7 @@
             }
         }
 
-        /* ÇARX LOGİKA (HƏR ŞANS AYRI) */
+        /* ÇARX LOGİKA */
         function getWheelSectors() {
             const wBomb = parseFloat(localStorage.getItem('kral_wheel_bomb')) || 60;
             const w5 = parseFloat(localStorage.getItem('kral_wheel_5')) || 45;
