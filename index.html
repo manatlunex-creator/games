@@ -95,7 +95,7 @@
 </head>
 <body>
 
-    <!-- GİRİŞ MODALI (Yenilənmiş Düymə Məntiqi) -->
+    <!-- GİRİŞ MODALI -->
     <div id="loginModal">
         <div class="login-box">
             <div class="login-title">KRAL GAMES</div>
@@ -260,10 +260,9 @@
         const firebaseConfig = {
             databaseURL: "https://kralgames-default-rtdb.firebaseio.com"
         };
-        if (!firebase.apps.length) {
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const database = firebase.database();
 
         let balance = 0;
         let currentPin = null;
@@ -288,6 +287,11 @@
 
             if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
 
+            if (typeof firebase === 'undefined') {
+                return alert('Firebase yüklənir, 2 saniyə sonra yenidən cəhd edin...');
+            }
+
+            const database = firebase.database();
             btn.disabled = true;
             btn.innerText = "YOXLANIŞ...";
 
@@ -297,53 +301,7 @@
                     if (snapshot.exists()) {
                         const userData = snapshot.val();
                         currentPin = pin;
-                        balance = parseFloat(userData.balance || 0);
-
-                        syncBalance();
-                        document.getElementById('loginModal').style.display = 'none';
-                            <script>
-        // FIREBASE İNİTİALİZASİYASI
-        const firebaseConfig = {
-            databaseURL: "https://kralgames-default-rtdb.firebaseio.com"
-        };
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const database = firebase.database();
-
-        let balance = 0;
-        let currentPin = null;
-        let jackpotVal = 145.20;
-
-        const slotImages = [
-            'https://cdn-icons-png.flaticon.com/512/3137/3137044.png',
-            'https://cdn-icons-png.flaticon.com/512/236/236822.png',
-            'https://cdn-icons-png.flaticon.com/512/7210/7210826.png',
-            'https://cdn-icons-png.flaticon.com/512/1135/1135528.png',
-            'https://cdn-icons-png.flaticon.com/512/6866/6866538.png',
-            'https://cdn-icons-png.flaticon.com/512/1998/1998614.png',
-            'https://cdn-icons-png.flaticon.com/512/1728/1728723.png'
-        ];
-        const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
-
-        // GİRİŞƏ BİRBAŞA NEZARƏT EDƏN FUNKSİYA
-        function processLogin() {
-            const btn = document.getElementById('loginBtn');
-            const pinInput = document.getElementById('pinInput');
-            const pin = pinInput ? pinInput.value.trim() : '';
-
-            if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
-
-            btn.disabled = true;
-            btn.innerText = "YOXLANIŞ...";
-
-            // Firebase ilə PIN yoxlama
-            database.ref('users/' + pin).once('value')
-                .then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        currentPin = pin;
-                        balance = parseFloat(userData.balance || 0);
+                         balance = parseFloat(userData.balance || 0);
 
                         syncBalance();
                         document.getElementById('loginModal').style.display = 'none';
@@ -355,6 +313,7 @@
                     }
                 })
                 .catch((err) => {
+                    console.error("Firebase Xətası:", err);
                     alert('Şəbəkə xətası! Firebase bağlantısını yoxlayın.');
                 })
                 .finally(() => {
@@ -366,14 +325,15 @@
         function syncBalance() {
             document.getElementById('mainBalanceDisplay').innerText = balance.toFixed(2);
             document.querySelectorAll('.gameBal').forEach(e => e.innerText = balance.toFixed(2));
-            if (currentPin) {
-                database.ref('users/' + currentPin + '/balance').set(balance.toFixed(2));
+            if (currentPin && typeof firebase !== 'undefined') {
+                firebase.database().ref('users/' + currentPin + '/balance').set(balance.toFixed(2));
             }
         }
 
         setInterval(() => {
             jackpotVal = (Math.random() * (500 - 50) + 50);
-            document.getElementById('jackpotDisplay').innerText = jackpotVal.toFixed(2) + " ₼";
+            const jEl = document.getElementById('jackpotDisplay');
+            if (jEl) jEl.innerText = jackpotVal.toFixed(2) + " ₼";
         }, 120);
 
         function openGame(id) { 
@@ -391,8 +351,11 @@
 
             const cells = [];
             for(let i=0; i<15; i++) {
-                cells.push(document.getElementById('c' + i));
-                cells[i].classList.remove('win-anim');
+                const c = document.getElementById('c' + i);
+                if (c) {
+                    cells.push(c);
+                    c.classList.remove('win-anim');
+                }
             }
 
             let ticks = 0;
@@ -408,14 +371,14 @@
                     if (Math.random() <= 0.3) {
                         const matchedIdx = Math.floor(Math.random() * slotImages.length);
                         const matchedImgHtml = `<img src="${slotImages[matchedIdx]}">`;
-                        cells[1].innerHTML = matchedImgHtml;
-                        cells[4].innerHTML = matchedImgHtml;
-                        cells[7].innerHTML = matchedImgHtml;
+                        if(cells[1]) cells[1].innerHTML = matchedImgHtml;
+                        if(cells[4]) cells[4].innerHTML = matchedImgHtml;
+                        if(cells[7]) cells[7].innerHTML = matchedImgHtml;
 
                         let winAmt = 1 * (payMultipliers[matchedIdx] || 5);
                         balance += winAmt; syncBalance();
                         document.getElementById('slotWinDisplay').innerText = winAmt.toFixed(2) + ' ₼';
-                        [cells[1], cells[4], cells[7]].forEach(c => c.classList.add('win-anim'));
+                        [cells[1], cells[4], cells[7]].forEach(c => { if(c) c.classList.add('win-anim'); });
                     }
                 }
             }, 55);
@@ -425,7 +388,9 @@
         let activeMines = false;
         function resetMines() {
             activeMines = false;
-            const b = document.getElementById('minesBoard'); b.innerHTML = '';
+            const b = document.getElementById('minesBoard');
+            if(!b) return;
+            b.innerHTML = '';
             for(let i=0; i<25; i++) {
                 let d = document.createElement('div');
                 d.className = 'mine-tile';
@@ -506,12 +471,14 @@
         }
 
         function checkWheelStatus() {
-            if (!currentPin) return;
-            database.ref('users/' + currentPin + '/wheelSpun').once('value').then(snap => {
+            if (!currentPin || typeof firebase === 'undefined') return;
+            firebase.database().ref('users/' + currentPin + '/wheelSpun').once('value').then(snap => {
                 if (snap.val() === true) {
                     const btn = document.getElementById('spinWheelBtn');
-                    btn.disabled = true;
-                    btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
+                    if(btn) {
+                        btn.disabled = true;
+                        btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
+                    }
                 }
             });
         }
@@ -541,10 +508,12 @@
             currentRotation += (360 * 5) + targetDegree - (currentRotation % 360);
 
             const canvas = document.getElementById('wheelCanvas');
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            if(canvas) canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
-                database.ref('users/' + currentPin + '/wheelSpun').set(true);
+                if (currentPin && typeof firebase !== 'undefined') {
+                    firebase.database().ref('users/' + currentPin + '/wheelSpun').set(true);
+                }
                 btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
 
                 const sec = sectors[selectedIndex];
@@ -559,5 +528,3 @@
     </script>
 </body>
 </html>
-
-                        
