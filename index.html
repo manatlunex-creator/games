@@ -156,7 +156,6 @@
         </div>
 
         <div class="fruit-game-wrap">
-            <!-- ÖDƏNİŞ CƏDVƏLİ (PAYTABLE) -->
             <div class="paytable-grid">
                 <div class="pay-card">
                     <div class="icon">🍉</div>
@@ -186,7 +185,6 @@
 
             <div class="slot-title-banner">LUCKY 432 WAYS</div>
 
-            <!-- 5 ÇARXLI SLOT FRAME -->
             <div class="slot-frame-1win">
                 <div class="reels-5-col">
                     <div class="reel-column">
@@ -217,7 +215,6 @@
                 </div>
             </div>
 
-            <!-- İDARƏETMƏ PANELSİ -->
             <div class="slot-bottom-controls">
                 <div class="slot-stats-row">
                     <div class="stat-box">
@@ -255,9 +252,7 @@
         let currentPin = null;
         let jackpotVal = 145.20;
 
-        function getUsersDB() {
-            return JSON.parse(localStorage.getItem('kral_users_db')) || {};
-        }
+        function getUsersDB() { return JSON.parse(localStorage.getItem('kral_users_db')) || {}; }
 
         function verifyPin() {
             const pin = document.getElementById('pinInput').value.trim();
@@ -288,7 +283,6 @@
             }
         }
 
-        // CANLI JACKPOT ANİMASİYASI (50 - 500 AZN SÜRƏTLİ DƏYİŞƏN)
         setInterval(() => {
             jackpotVal = (Math.random() * (500 - 50) + 50);
             document.getElementById('jackpotDisplay').innerText = jackpotVal.toFixed(2) + " ₼";
@@ -301,7 +295,7 @@
         }
         function closeGame(id) { document.getElementById(id).classList.remove('active'); }
 
-        /* FRUITS SLOT 5 REEL LOGIC */
+        /* MEYVƏ OYUNU & JACKPOT */
         const slotIcons = ['🍉', '7️⃣', '🍇', '🔮', '🍋', '🍒', '🍊'];
         const payMultipliers = { '🍉': 100, '7️⃣': 500, '🍇': 20, '🔮': 10, '🍋': 8, '🍒': 8, '🍊': 5 };
 
@@ -318,73 +312,81 @@
 
             let ticks = 0;
             const interval = setInterval(() => {
-                cells.forEach(c => {
-                    c.innerText = slotIcons[Math.floor(Math.random() * slotIcons.length)];
-                });
+                cells.forEach(c => { c.innerText = slotIcons[Math.floor(Math.random() * slotIcons.length)]; });
                 ticks++;
 
                 if (ticks > 14) {
                     clearInterval(interval);
                     
-                    // Admin Panelində təyin olunan Jackpot Ehtimalını oxu
                     const jackChance = parseFloat(localStorage.getItem('kral_jackpot_chance')) || 5; 
-                    const rand = Math.random() * 100;
+                    const fruitChance = parseFloat(localStorage.getItem('kral_fruit_chance')) || 30;
 
-                    if (rand <= jackChance) {
+                    // 1. Öncə Jackpot Şansı Yoxlanılır
+                    if ((Math.random() * 100) <= jackChance) {
                         const winJack = jackpotVal;
-                        balance += winJack;
-                        syncBalance();
-                        document.getElementById('slotWinDisplay').innerText = winJack.toFixed(2) + ' ₼';
-                                /* FRUITS SLOT 5 REEL LOGIC */
-        const slotIcons = ['🍉', '7️⃣', '🍇', '🔮', '🍋', '🍒', '🍊'];
-        const payMultipliers = { '🍉': 100, '7️⃣': 500, '🍇': 20, '🔮': 10, '🍋': 8, '🍒': 8, '🍊': 5 };
-
-        function spinSlot() {
-            if (balance < 1) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
-            balance -= 1; syncBalance();
-            document.getElementById('slotWinDisplay').innerText = '0.00 ₼';
-
-            const cells = [];
-            for(let i=0; i<15; i++) {
-                cells.push(document.getElementById('c' + i));
-                cells[i].classList.remove('win-anim');
-            }
-
-            let ticks = 0;
-            const interval = setInterval(() => {
-                cells.forEach(c => {
-                    c.innerText = slotIcons[Math.floor(Math.random() * slotIcons.length)];
-                });
-                ticks++;
-
-                if (ticks > 14) {
-                    clearInterval(interval);
-                    
-                    // Admin Panelində təyin olunan Jackpot Ehtimalını oxu
-                    const jackChance = parseFloat(localStorage.getItem('kral_jackpot_chance')) || 5; 
-                    const rand = Math.random() * 100;
-
-                    if (rand <= jackChance) {
-                        const winJack = jackpotVal;
-                        balance += winJack;
-                        syncBalance();
+                        balance += winJack; syncBalance();
                         document.getElementById('slotWinDisplay').innerText = winJack.toFixed(2) + ' ₼';
                         alert(`🎉 TEBRİKLƏR! GRAND JACKPOT QAZANDINIZ: ${winJack.toFixed(2)} ₼!`);
-                    } else {
-                        // Orta xətt üzrə uduş yoxlanışı
-                        const res = cells.map(c => c.innerText);
-                        if(res[1] === res[4] && res[4] === res[7]) {
-                            let winAmt = 1 * (payMultipliers[res[1]] || 5);
-                            balance += winAmt; syncBalance();
-                            document.getElementById('slotWinDisplay').innerText = winAmt.toFixed(2) + ' ₼';
-                            [cells[1], cells[4], cells[7]].forEach(c => c.classList.add('win-anim'));
-                        }
+                    } 
+                    // 2. Meyvə Oyununun Öz Standart Uduş Şansı Yoxlanılır
+                    else if ((Math.random() * 100) <= fruitCh
+                                     function openGame(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if(id==='minesModal') resetMines(); 
+            if(id==='wheelModal') checkWheelStatus();
+        }
+        function closeGame(id) { document.getElementById(id).classList.remove('active'); }
+
+        /* MEYVƏ OYUNU & JACKPOT */
+        const slotIcons = ['🍉', '7️⃣', '🍇', '🔮', '🍋', '🍒', '🍊'];
+        const payMultipliers = { '🍉': 100, '7️⃣': 500, '🍇': 20, '🔮': 10, '🍋': 8, '🍒': 8, '🍊': 5 };
+
+        function spinSlot() {
+            if (balance < 1) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
+            balance -= 1; syncBalance();
+            document.getElementById('slotWinDisplay').innerText = '0.00 ₼';
+
+            const cells = [];
+            for(let i=0; i<15; i++) {
+                cells.push(document.getElementById('c' + i));
+                cells[i].classList.remove('win-anim');
+            }
+
+            let ticks = 0;
+            const interval = setInterval(() => {
+                cells.forEach(c => { c.innerText = slotIcons[Math.floor(Math.random() * slotIcons.length)]; });
+                ticks++;
+
+                if (ticks > 14) {
+                    clearInterval(interval);
+                    
+                    const jackChance = parseFloat(localStorage.getItem('kral_jackpot_chance')) || 5; 
+                    const fruitChance = parseFloat(localStorage.getItem('kral_fruit_chance')) || 30;
+
+                    // 1. Öncə Jackpot Şansı Yoxlanılır
+                    if ((Math.random() * 100) <= jackChance) {
+                        const winJack = jackpotVal;
+                        balance += winJack; syncBalance();
+                        document.getElementById('slotWinDisplay').innerText = winJack.toFixed(2) + ' ₼';
+                        alert(`🎉 TEBRİKLƏR! GRAND JACKPOT QAZANDINIZ: ${winJack.toFixed(2)} ₼!`);
+                    } 
+                    // 2. Meyvə Oyununun Öz Standart Uduş Şansı Yoxlanılır
+                    else if ((Math.random() * 100) <= fruitChance) {
+                        const matchedIcon = slotIcons[Math.floor(Math.random() * slotIcons.length)];
+                        cells[1].innerText = matchedIcon;
+                        cells[4].innerText = matchedIcon;
+                        cells[7].innerText = matchedIcon;
+
+                        let winAmt = 1 * (payMultipliers[matchedIcon] || 5);
+                        balance += winAmt; syncBalance();
+                        document.getElementById('slotWinDisplay').innerText = winAmt.toFixed(2) + ' ₼';
+                        [cells[1], cells[4], cells[7]].forEach(c => c.classList.add('win-anim'));
                     }
                 }
             }, 55);
         }
 
-        /* MINES LOGIC */
+        /* MINES LOGİKA */
         let activeMines = false;
         function resetMines() {
             activeMines = false;
@@ -405,12 +407,14 @@
                 activeMines = true;
                 document.getElementById('minesBtn').innerText = 'QAZANCI GÖTÜR';
                 
+                const mineChance = (parseFloat(localStorage.getItem('kral_mines_chance')) || 20) / 100;
                 let tiles = document.querySelectorAll('.mine-tile');
+                
                 tiles.forEach((t) => {
                     t.innerText = '';
                     t.onclick = () => {
                         if(!activeMines) return;
-                        if(Math.random() < 0.2) {
+                        if(Math.random() < mineChance) {
                             t.classList.add('bomb'); t.innerText = '💣';
                             alert('Bomba patladı!'); activeMines = false;
                             resetMines();
@@ -425,28 +429,35 @@
             }
         }
 
-        /* 10 BÖLMƏLİ ÇARX LOGİKASI (SADƏCƏ 1 DƏFƏ VƏ BALANS 0 OLDUQDA) */
-        const wheelSectors = [
-            { label: '💣', type: 'bomb', win: 0, weight: 60 },
-            { label: '5 ₼', type: 'win', win: 5, weight: 45 },
-            { label: '💣', type: 'bomb', win: 0, weight: 60 },
-            { label: '20 ₼', type: 'win', win: 20, weight: 30 },
-            { label: '💣', type: 'bomb', win: 0, weight: 60 },
-            { label: '5 ₼', type: 'win', win: 5, weight: 45 },
-            { label: '💣', type: 'bomb', win: 0, weight: 60 },
-            { label: '100 ₼', type: 'win', win: 100, weight: 1 },
-            { label: '💣', type: 'bomb', win: 0, weight: 60 },
-            { label: '20 ₼', type: 'win', win: 20, weight: 30 }
-        ];
+        /* ÇARX LOGİKA (HƏR ŞANS AYRI) */
+        function getWheelSectors() {
+            const wBomb = parseFloat(localStorage.getItem('kral_wheel_bomb')) || 60;
+            const w5 = parseFloat(localStorage.getItem('kral_wheel_5')) || 45;
+            const w20 = parseFloat(localStorage.getItem('kral_wheel_20')) || 30;
+            const w100 = parseFloat(localStorage.getItem('kral_wheel_100')) || 1;
+
+            return [
+                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
+                { label: '5 ₼', type: 'win', win: 5, weight: w5 },
+                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
+                { label: '20 ₼', type: 'win', win: 20, weight: w20 },
+                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
+                { label: '5 ₼', type: 'win', win: 5, weight: w5 },
+                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
+                { label: '100 ₼', type: 'win', win: 100, weight: w100 },
+                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
+                { label: '20 ₼', type: 'win', win: 20, weight: w20 }
+            ];
+        }
 
         function drawWheel() {
             const canvas = document.getElementById('wheelCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            const numSectors = 10;
-            const arc = (2 * Math.PI) / numSectors;
+            const sectors = getWheelSectors();
+            const arc = (2 * Math.PI) / 10;
 
-            for (let i = 0; i < numSectors; i++) {
+            for (let i = 0; i < 10; i++) {
                 const angle = i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = i % 2 === 0 ? '#1f080e' : '#0d0205';
@@ -458,9 +469,9 @@
                 ctx.translate(140, 140);
                 ctx.rotate(angle + arc / 2);
                 ctx.textAlign = "right";
-                ctx.fillStyle = wheelSectors[i].type === 'bomb' ? '#ef4444' : '#f59e0b';
+                ctx.fillStyle = sectors[i].type === 'bomb' ? '#ef4444' : '#f59e0b';
                 ctx.font = "bold 16px sans-serif";
-                ctx.fillText(wheelSectors[i].label, 125, 5);
+                ctx.fillText(sectors[i].label, 125, 5);
                 ctx.restore();
             }
         }
@@ -491,22 +502,22 @@
 
             btn.disabled = true;
 
-            let totalWeight = wheelSectors.reduce((a, b) => a + b.weight, 0);
+            const sectors = getWheelSectors();
+            let totalWeight = sectors.reduce((a, b) => a + b.weight, 0);
             let randomNum = Math.random() * totalWeight;
             let selectedIndex = 0;
 
-            for (let i = 0; i < wheelSectors.length; i++) {
-                if (randomNum < wheelSectors[i].weight) {
+            for (let i = 0; i < sectors.length; i++) {
+                if (randomNum < sectors[i].weight) {
                     selectedIndex = i;
                     break;
                 }
-                randomNum -= wheelSectors[i].weight;
+                randomNum -= sectors[i].weight;
             }
 
             const sectorDegree = 360 / 10;
             const targetDegree = 360 - (selectedIndex * sectorDegree) - (sectorDegree / 2);
-            const extraRotations = 360 * 5; 
-            currentRotation += extraRotations + targetDegree - (currentRotation % 360);
+            currentRotation += (360 * 5) + targetDegree - (currentRotation % 360);
 
             const canvas = document.getElementById('wheelCanvas');
             canvas.style.transform = `rotate(${currentRotation}deg)`;
@@ -515,12 +526,11 @@
                 localStorage.setItem('wheel_spun_' + currentPin, 'true');
                 btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
 
-                const sec = wheelSectors[selectedIndex];
+                const sec = sectors[selectedIndex];
                 if (sec.type === 'bomb') {
                     alert('💣 BOMBA DÜŞDÜ! Təəssüf ki, şansınız gətirmədi.');
                 } else {
-                    balance += sec.win;
-                    syncBalance();
+                    balance += sec.win; syncBalance();
                     alert(`🎉 TEBRİKLƏR! Xilas çarxından ${sec.win}.00 ₼ QAZANDINIZ!`);
                 }
             }, 4000);
