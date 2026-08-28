@@ -3,272 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Kral Games - VIP Casino</title>
+  <title>Kral Games</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
     body { background: #07060b; color: #fff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-    .container { width: 100%; max-width: 480px; min-height: 100vh; background: #0c0a14; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    
+    /* Ekranlar */
+    .screen { display: none; width: 100%; max-width: 480px; flex-direction: column; min-height: 100vh; padding-bottom: 70px; }
+    .screen.active { display: flex; }
 
-    /* Top Bar */
-    .top-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #141120; border-bottom: 1px solid #231f3d; padding: 12px 16px;
-    }
-    .balance-box { font-size: 15px; font-weight: bold; color: #2ecc71; display: flex; align-items: center; gap: 6px; }
-    .actions-top { display: flex; gap: 8px; }
-    .btn-action {
-      background: #ff3b30; color: #fff; border: none; padding: 7px 12px; border-radius: 8px;
-      font-weight: bold; font-size: 12px; cursor: pointer; text-decoration: none;
-      box-shadow: 0 0 10px rgba(255, 59, 48, 0.4); transition: 0.2s;
-    }
-    .btn-withdraw { background: #9b59b6; box-shadow: 0 0 10px rgba(155, 89, 182, 0.4); }
+    /* PIN Giriş Ekranı */
+    #pin-screen { justify-content: center; align-items: center; padding: 20px; }
+    .pin-box { background: #141120; border: 1px solid #292442; border-radius: 16px; padding: 25px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    .pin-box h2 { color: #ffd700; margin-bottom: 15px; font-size: 22px; }
+    .pin-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #363052; background: #07060b; color: #fff; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none; letter-spacing: 2px; }
+    
+    /* Ümumi Düymələr */
+    .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(180deg, #ffd700 0%, #ff9900 100%); color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
+    .btn:active { transform: scale(0.98); }
 
-    /* Jackpot Banner */
-    .jackpot-banner {
-      background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
-      margin: 12px 16px; padding: 12px; border-radius: 12px; text-align: center;
-      box-shadow: 0 0 20px rgba(243, 156, 18, 0.4); border: 1px solid #f1c40f;
-    }
-    .jackpot-title { font-size: 11px; text-transform: uppercase; font-weight: bold; color: #ffeaa7; letter-spacing: 1px; }
-    .jackpot-amount { font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.4); margin-top: 2px; }
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #100d1a; border-bottom: 1px solid #231f3d; }
+    .balance-badge { background: #1a162b; border: 1px solid #362f59; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #2ecc71; font-size: 15px; }
 
-    /* PIN Screen */
-    #pin-screen { padding: 40px 20px; text-align: center; margin: auto; width: 100%; }
-    .pin-card {
-      background: #141120; border: 2px solid #ff3b30; padding: 30px 20px; border-radius: 20px;
-      box-shadow: 0 0 30px rgba(255, 59, 48, 0.2);
-    }
-    input[type="text"], input[type="number"] {
-      width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #363052;
-      background: #07060b; color: #fff; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none;
-    }
-    .btn-gold {
-      width: 100%; padding: 14px; border-radius: 10px; border: none;
-      background: linear-gradient(180deg, #ffd700 0%, #ff9900 100%);
-      color: #000; font-weight: bold; font-size: 16px; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); transition: 0.2s;
-    }
-    .btn-gold:active { transform: scale(0.98); }
-
-    /* Lobby & Games */
-    #game-screen { display: none; flex: 1; flex-direction: column; padding: 16px; }
-    .lobby-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .game-card {
-      background: linear-gradient(145deg, #181525 0%, #0f0d17 100%);
-      border: 1px solid #292442; border-radius: 16px; padding: 20px 10px; text-align: center;
-      cursor: pointer; transition: 0.2s; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-    .game-card:hover { border-color: #ff3b30; transform: translateY(-3px); }
-    .game-card span { font-size: 36px; display: block; margin-bottom: 10px; }
-    .game-card h4 { font-size: 14px; color: #fff; }
-
-    .game-panel { display: none; flex-direction: column; flex: 1; }
+    /* Oyun Panelləri */
+    .game-panel { display: none; flex-direction: column; padding: 15px; flex: 1; }
     .game-panel.active { display: flex; }
-    .back-lobby {
-      background: #1b172a; color: #aaa; border: 1px solid #363052; padding: 8px 14px; border-radius: 8px;
-      font-size: 12px; cursor: pointer; align-self: flex-start; margin-bottom: 15px; font-weight: bold;
-    }
 
-    /* Bet Controls */
-    .bet-selector { display: flex; gap: 6px; margin-bottom: 10px; }
-    .bet-btn {
-      flex: 1; background: #181525; border: 1px solid #363052; color: #fff; padding: 8px 4px;
-      border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
-    }
-    .bet-btn.active { background: #ff3b30; border-color: #ff3b30; }
+    /* Slot Stili */
+    .slot-container { background: #141120; border: 2px solid #ffd700; border-radius: 14px; padding: 15px; text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+    .slot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; background: #07060b; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+    .slot-col { display: flex; flex-direction: column; gap: 6px; }
+    .slot-icon { background: #1c182d; border-radius: 6px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid #2d2647; }
+    .winning-line { border-color: #2ecc71 !important; background: rgba(46, 204, 113, 0.2) !important; }
 
-    /* Fruit Slot */
-    .paytable {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-      background: #141120; padding: 8px; border-radius: 10px; border: 1px solid #292442; margin-bottom: 15px; font-size: 11px; color: #ffd700; text-align: center;
-    }
-    .slot-frame {
-      display: flex; justify-content: space-around; background: #07060b;
-      border: 3px solid #ffcc00; border-radius: 14px; padding: 8px; gap: 6px; margin-bottom: 15px;
-      box-shadow: inset 0 0 15px rgba(255, 204, 0, 0.3);
-    }
-    .reel-col {
-      flex: 1; display: flex; flex-direction: column; gap: 6px; background: #120f1b;
-      border: 1px solid #292442; border-radius: 8px; padding: 6px; overflow: hidden;
-    }
-    .slot-icon { font-size: 28px; height: 50px; display: flex; align-items: center; justify-content: center; background: #1a1626; border-radius: 6px; transition: 0.2s; }
-    .slot-icon.winning-line { background: #2ecc71; box-shadow: 0 0 12px #2ecc71; transform: scale(1.05); }
+    /* Mines Grid */
+    .mines-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+    .mine-card { background: #1c182d; border: 1px solid #363052; border-radius: 10px; height: 75px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; transition: 0.2s; }
+    .mine-card.open { background: #221d38; border-color: #3498db; }
+    .mine-card.boom { background: #ff3b30; border-color: #ff3b30; }
 
-    /* Big Win Overlay Popup */
-    #winPopup {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; flex-direction: column;
-      animation: fadeIn 0.3s ease;
-    }
-    #winPopup h2 { font-size: 32px; color: #ffd700; text-shadow: 0 0 20px #ff9900; margin-bottom: 10px; text-align: center; }
-    #winPopup p { font-size: 24px; color: #2ecc71; font-weight: bold; }
+    /* Wheel Canvas */
+    .wheel-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+    canvas { border-radius: 50%; box-shadow: 0 0 20px rgba(255,215,0,0.3); margin-bottom: 20px; }
 
-    /* Mines */
-    .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 15px 0; }
-    .mine-card {
-      aspect-ratio: 1; background: #161322; border: 1px solid #363052; border-radius: 10px;
-      font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s;
-    }
-    .mine-card.open { background: #0a2614; border-color: #2ecc71; }
-    .mine-card.boom { background: #3d0a0a; border-color: #ff3b30; }
+    /* Bottom Nav */
+    .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #100d1a; border-top: 1px solid #231f3d; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
+    .nav-item { background: none; border: none; color: #8a85a3; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+    .nav-item.active { color: #ffd700; }
+    .nav-item span { font-size: 18px; }
 
-    /* Wheel */
-    .wheel-container { position: relative; width: 280px; height: 280px; margin: 15px auto; }
-    #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #ffd700; box-shadow: 0 0 25px rgba(255,215,0,0.4); }
-    .wheel-pointer {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid #ff3b30; z-index: 10;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    }
-
-    /* Modals */
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-content {
-      background: #141120; border: 2px solid #363052; border-radius: 16px; padding: 20px; width: 100%; max-width: 360px; text-align: center;
-    }
-    .game-res { margin-top: 15px; font-weight: bold; font-size: 15px; text-align: center; min-height: 22px; }
+    /* Msg */
+    .msg { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 20px; }
+    
+    /* Inputs */
+    .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #363052; background: #07060b; color: #fff; font-size: 15px; margin-bottom: 10px; outline: none; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1 style="color: #ff3b30; font-size: 20px; text-align: center; padding: 15px 0 5px 0; text-shadow: 0 0 10px rgba(255,59,48,0.5);">👑 KRAL GAMES VIP 👑</h1>
+  <div id="pin-screen" class="screen active">
+    <div class="pin-box">
+      <h2>👑 KRAL GAMES 👑</h2>
+      <p style="color:#aaa; font-size:13px; margin-bottom:15px;">Daxil olmaq üçün PIN kodunuzu yazın</p>
+      <input type="text" id="pinInput" class="pin-input" placeholder="Məs: 7777">
+      <button class="btn" onclick="loginWithPin()">DAXİL OL</button>
+      <div class="msg" id="login-msg" style="color:#ff3b30;"></div>
+    </div>
+  </div>
 
-    <!-- PIN Screen -->
-    <div id="pin-screen">
-      <div class="pin-card">
-        <h3 style="margin-bottom: 15px; color: #ffd700; font-size: 16px;">Giriş Üçün PIN Kodu Daxil Edin</h3>
-        <input type="text" id="pinInput" placeholder="PIN KOD">
-        <button class="btn-gold" onclick="verifyPin()">GİRİŞ ET</button>
-        <div id="status" style="margin-top: 12px; font-size: 13px; font-weight: bold;"></div>
+  <div id="game-screen" class="screen">
+    <div class="header">
+      <span style="font-weight:bold; color:#ffd700;">👑 Kral Games</span>
+      <div class="balance-badge"><span id="user-balance">0.00</span> AZN</div>
+    </div>
+
+    <div id="lobby-menu" class="game-panel active">
+      <h3 style="margin-bottom: 15px; color:#ffd700;">Oyunlar</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn" onclick="openGame('slot')">🎰 Fruit Slot</button>
+        <button class="btn" onclick="openGame('mines')">💣 Mines (Minalar)</button>
+        <button class="btn" onclick="openGame('wheel')" style="background: linear-gradient(180deg, #3498db 0%, #2980b9 100%); color:#fff;">🎡 Çarx (Xoşbəxtlik Çarxı)</button>
       </div>
     </div>
 
-    <!-- Main Game Screen -->
-    <div id="game-screen">
-      
-      <div class="top-bar">
-        <div class="balance-box">💰 <span id="user-balance">0.00</span> AZN</div>
-        <div class="actions-top">
-          <button class="btn-action btn-withdraw" onclick="openWithdrawModal()">Çıxarış</button>
-          <a href="https://t.me/gamesadmin1" target="_blank" class="btn-action">Artır</a>
+    <div id="slot-panel" class="game-panel">
+      <button onclick="closeGame()" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer; text-align:left; margin-bottom:10px;">← Geri</button>
+      <div class="slot-container">
+        <h3 style="color:#ffd700; margin-bottom:10px;">Fruit Slot</h3>
+        <div class="slot-grid" id="slotGrid">
+          <div class="slot-col" id="col1"><div class="slot-icon">🍉</div><div class="slot-icon">🍒</div><div class="slot-icon">🍊</div></div>
+          <div class="slot-col" id="col2"><div class="slot-icon">🍇</div><div class="slot-icon">🍋</div><div class="slot-icon">🍉</div></div>
+          <div class="slot-col" id="col3"><div class="slot-icon">7️⃣</div><div class="slot-icon">🍇</div><div class="slot-icon">🍊</div></div>
+          <div class="slot-col" id="col4"><div class="slot-icon">🍊</div><div class="slot-icon">🍋</div><div class="slot-icon">🍇</div></div>
+          <div class="slot-col" id="col5"><div class="slot-icon">🍉</div><div class="slot-icon">🍒</div><div class="slot-icon">7️⃣</div></div>
         </div>
+        <input type="number" id="slotBet" class="input-field" value="1" min="0.1" step="0.5" placeholder="Mərc məbləği">
+        <button class="btn" onclick="spinSlot()">FIRLAT</button>
+        <div class="msg" id="fruit-res"></div>
       </div>
+    </div>
 
-      <!-- Jackpot Banner -->
-      <div class="jackpot-banner">
-        <div class="jackpot-title">🔥 MEGA JACKPOT 🔥</div>
-        <div class="jackpot-amount" id="jackpot-display">1,450.00 AZN</div>
-      </div>
-
-      <!-- LOBBY -->
-      <div id="lobby-menu" class="game-panel active">
-        <h3 style="color: #ffd700; margin-bottom: 12px; font-size: 15px;">🎮 KAZİNO OYUNLARI</h3>
-        <div class="lobby-grid">
-          <div class="game-card" onclick="openGame('fruit')">
-            <span>🍉</span>
-            <h4>VIP Fruit Slot</h4>
-          </div>
-          <div class="game-card" onclick="openGame('mines')">
-            <span>💣</span>
-            <h4>Mines (Minalar)</h4>
-          </div>
-          <div class="game-card" onclick="openGame('wheel')">
-            <span>🎡</span>
-            <h4>Bonus Çarx</h4>
-          </div>
-        </div>
-      </div>
-
-      <!-- 1. VIP FRUIT SLOT -->
-      <div id="fruit-panel" class="game-panel">
-        <button class="back-lobby" onclick="closeGame()">← Lobby</button>
-        <div class="paytable">
-          <div>🍉 3x: 5 AZN</div>
-          <div>🍊 4x: 15 AZN</div>
-          <div>🍋 5x: 50 AZN</div>
-        </div>
-
-        <div class="slot-frame">
-          <div class="reel-col" id="col1"><div class="slot-icon">🍉</div><div class="slot-icon">🍋</div><div class="slot-icon">🍊</div></div>
-          <div class="reel-col" id="col2"><div class="slot-icon">🍊</div><div class="slot-icon">🍉</div><div class="slot-icon">🍋</div></div>
-          <div class="reel-col" id="col3"><div class="slot-icon">🍋</div><div class="slot-icon">🍊</div><div class="slot-icon">🍉</div></div>
-          <div class="reel-col" id="col4"><div class="slot-icon">🍉</div><div class="slot-icon">🍋</div><div class="slot-icon">🍊</div></div>
-          <div class="reel-col" id="col5"><div class="slot-icon">🍊</div><div class="slot-icon">🍉</div><div class="slot-icon">🍋</div></div>
-        </div>
-
-        <!-- Mərc Seçimləri (0.20 - 10 AZN) -->
-        <div class="bet-selector">
-          <button class="bet-btn active" onclick="setSlotBet(0.20, this)">0.20</button>
-          <button class="bet-btn" onclick="setSlotBet(0.50, this)">0.50</button>
-          <button class="bet-btn" onclick="setSlotBet(1.00, this)">1.00</button>
-          <button class="bet-btn" onclick="setSlotBet(5.00, this)">5.00</button>
-          <button class="bet-btn" onclick="setSlotBet(10.00, this)">10.00</button>
-        </div>
-        <input type="number" id="slotBet" value="0.20" min="0.20" max="10" step="0.1" style="display:none;">
-        
-        <button class="btn-gold" onclick="spinSlot()">FIRLAT (SPIN)</button>
-        <div class="game-res" id="fruit-res"></div>
-      </div>
-
-      <!-- 2. MINES GAME -->
-      <div id="mines-panel" class="game-panel">
-        <button class="back-lobby" onclick="closeGame()">← Lobby</button>
-        <div style="font-size: 13px; color: #ffd700; margin-bottom: 6px; text-align: center;">Vuruq: <span id="mine-mult">1.00</span>x</div>
+    <div id="mines-panel" class="game-panel">
+      <button onclick="closeGame()" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer; text-align:left; margin-bottom:10px;">← Geri</button>
+      <div class="slot-container">
+        <h3 style="color:#ffd700; margin-bottom:10px;">Mines (Əmsal: <span id="mine-mult" style="color:#2ecc71;">1.00</span>x)</h3>
         <div class="mines-grid" id="minesGrid"></div>
-        
-        <div class="bet-selector">
-          <button class="bet-btn active" onclick="setMinesBet(0.20, this)">0.20</button>
-          <button class="bet-btn" onclick="setMinesBet(0.50, this)">0.50</button>
-          <button class="bet-btn" onclick="setMinesBet(1.00, this)">1.00</button>
-          <button class="bet-btn" onclick="setMinesBet(5.00, this)">5.00</button>
-          <button class="bet-btn" onclick="setMinesBet(10.00, this)">10.00</button>
-        </div>
-        <input type="number" id="minesBet" value="0.20" style="display:none;">
-
-        <button class="btn-gold" id="minesStartBtn" onclick="startMines()">OYUNA BAŞLA</button>
-        <button class="btn-gold" id="minesCashoutBtn" onclick="cashoutMines()" style="display:none; background: #2ecc71; color:#fff;">CASHOUT</button>
-        <div class="game-res" id="mines-res"></div>
+        <input type="number" id="minesBet" class="input-field" value="1" min="0.1" step="0.5">
+        <button class="btn" id="minesStartBtn" onclick="startMines()">OYUNA BAŞLA</button>
+        <button class="btn" id="minesCashoutBtn" onclick="cashoutMines()" style="display:none; background: #2ecc71; color:#000;">PULUNU GÖTÜR (CASHOUT)</button>
+        <div class="msg" id="mines-res"></div>
       </div>
+    </div>
 
-      <!-- 3. WHEEL GAME -->
-      <div id="wheel-panel" class="game-panel">
-        <button class="back-lobby" onclick="closeGame()">← Lobby</button>
-        <div style="font-size: 13px; color: #ff3b30; font-weight: bold; margin-bottom: 5px; text-align: center;" id="wheelStatusMsg">Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!</div>
-        <div class="wheel-container">
-          <div class="wheel-pointer"></div>
-          <canvas id="wheelCanvas" width="300" height="300"></canvas>
-        </div>
-        <button class="btn-gold" id="wheelSpinBtn" onclick="spinWheel()">ÇARXI FIRLAT</button>
-        <div class="game-res" id="wheel-res"></div>
+    <div id="wheel-panel" class="game-panel">
+      <button onclick="closeGame()" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer; text-align:left; margin-bottom:10px;">← Geri</button>
+      <div class="wheel-box">
+        <h3 style="color:#ffd700; margin-bottom:10px;">Xoşbəxtlik Çarxı</h3>
+        <p id="wheelStatusMsg" style="font-size:13px; color:#aaa; margin-bottom:15px;"></p>
+        <canvas id="wheelCanvas" width="260" height="260"></canvas>
+        <button class="btn" id="wheelSpinBtn" onclick="spinWheel()" style="display:none;">PULSUZ ÇARXI FIRLAT</button>
+        <div class="msg" id="wheel-res"></div>
       </div>
+    </div>
 
+    <div class="nav-bar">
+      <button class="nav-item active" onclick="closeGame()"><span>🏠</span>Loby</button>
+      <button class="nav-item" onclick="openWithdrawModal()"><span>💳</span>Çıxarış</button>
     </div>
   </div>
 
-  <!-- Big Win / Mega Win Pop-up Overlay -->
-  <div id="winPopup" onclick="this.style.display='none'">
-    <div style="background: #141120; border: 3px solid #ffd700; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 0 40px #ff9900;">
-      <h2 id="winPopupTitle">BIG WIN!</h2>
-      <p id="winPopupAmount">+0.00 AZN</p>
-      <span style="font-size: 12px; color: #aaa; display: block; margin-top: 15px;">Bağlamaq üçün toxun</span>
-    </div>
-  </div>
-
-  <!-- Withdraw Modal -->
-  <div class="modal" id="withdrawModal">
-    <div class="modal-content">
-      <h3 style="color: #ffd700; margin-bottom: 12px;">Pulu Çıxarış Etmək</h3>
-      <input type="number" id="withdrawAmount" placeholder="Məbləğ (AZN)" min="1">
-      <input type="text" id="withdrawCard" placeholder="Kart nömrəsi / İBAN">
-      <button class="btn-gold" onclick="submitWithdraw()">TƏSDİQ ET</button>
-      <button class="back-lobby" style="width:100%; margin-top:10px; text-align:center;" onclick="closeWithdrawModal()">Bağla</button>
-      <div id="withdraw-res" style="margin-top:10px; font-size:13px; font-weight:bold;"></div>
+  <div id="withdrawModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:200; padding:20px;">
+    <div style="background:#141120; border:1px solid #292442; border-radius:16px; padding:20px; width:100%; max-width:350px;">
+      <h3 style="color:#ffd700; margin-bottom:15px; text-align:center;">Pul Çıxarışı</h3>
+      <input type="number" id="withdrawAmount" class="input-field" placeholder="Məbləğ (AZN)">
+      <input type="text" id="withdrawCard" class="input-field" placeholder="Kart nömrəsi və ya İBAN">
+      <button class="btn" onclick="submitWithdraw()">TƏSDİQ ET</button>
+      <button onclick="closeWithdrawModal()" style="width:100%; margin-top:10px; background:none; border:none; color:#aaa; cursor:pointer;">Bağla</button>
+      <div class="msg" id="withdraw-res"></div>
     </div>
   </div>
 
@@ -283,132 +157,91 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let currentPin = "";
+    let currentPin = null;
     let balance = 0;
     let wheelUsed = false;
-    let winChance = 35;
+    let winChance = 35; // Admin panelden idarə olunan uduş şansı
 
-    db.ref("settings/winChance").on("value", snap => { if(snap.exists()) winChance = snap.val(); });
-    db.ref("settings/jackpot").on("value", snap => {
-      if(snap.exists()) document.getElementById("jackpot-display").innerText = parseFloat(snap.val()).toFixed(2) + " AZN";
+    // Admin tərəfindən qoyulan uduş şansını canlı dinlə
+    db.ref("settings/winChance").on("value", snap => {
+      if(snap.exists()) winChance = snap.val();
     });
 
-    /* Bet selectors */
-    function setSlotBet(val, btn) {
-      document.getElementById("slotBet").value = val;
-      btn.parentNode.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-    function setMinesBet(val, btn) {
-      document.getElementById("minesBet").value = val;
-      btn.parentNode.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-
-    /* Advanced Audio FX */
-    let audioCtx = null;
-    function playSound(type) {
-      try {
-        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-
-        if(type === 'click') {
-          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.04);
-        } else if(type === 'wheel') {
-          // Çarx fırlanma səsi
-          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if(type === 'win') {
-          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-          osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-          osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
-          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-        } else if(type === 'boom') {
-          osc.frequency.setValueAtTime(90, audioCtx.currentTime);
-          osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.3);
-          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-        }
-      } catch(e) {}
-    }
-
-    function verifyPin() {
+    // PIN ilə daxil olma
+    function loginWithPin() {
       const pin = document.getElementById("pinInput").value.trim();
-      const status = document.getElementById("status");
-      if(!pin) { status.style.color="orange"; status.innerText="PIN daxil edin!"; return; }
+      const msg = document.getElementById("login-msg");
+      if(!pin) { msg.innerText = "Zəhmət olmasa PIN daxil edin!"; return; }
 
-      db.ref("pins/" + pin).once("value").then(snapshot => {
-        if(snapshot.exists()) {
+      db.ref("pins/" + pin).once("value").then(snap => {
+        if(snap.exists()) {
           currentPin = pin;
-          balance = snapshot.val().balance || 0;
-          wheelUsed = snapshot.val().wheelUsed || false;
-          document.getElementById("pin-screen").style.display = "none";
-          document.getElementById("game-screen").style.display = "flex";
-          
-          if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-          }
+          const data = snap.val();
+          balance = data.balance || 0;
+          wheelUsed = data.wheelUsed || false;
 
-          updateBal();
-          initMinesGrid();
-          drawWheel();
+          document.getElementById("pin-screen").classList.remove("active");
+          document.getElementById("game-screen").classList.add("active");
           
-          db.ref("pins/" + currentPin + "/balance").on("value", snap => {
-            if(snap.exists()) {
-              balance = snap.val();
-              document.getElementById("user-balance").innerText = balance.toFixed(2);
-              if(balance <= 0 && !wheelUsed) openGame('wheel');
-            }
-          });
+          // Balansı və çarxı real vaxtda izlə
+          listenToUserBalance();
         } else {
-          status.style.color="#ff3b30"; status.innerText="Səhv PIN Kodu!";
+          msg.innerText = "Yanlış PIN kod!";
+        }
+      });
+    }
+
+    // Real-time balans izləmə
+    function listenToUserBalance() {
+      db.ref("pins/" + currentPin).on("value", snap => {
+        if(snap.exists()) {
+          const data = snap.val();
+          balance = data.balance;
+          wheelUsed = data.wheelUsed || false;
+          document.getElementById("user-balance").innerText = balance.toFixed(2);
+          if(balance <= 0 && !wheelUsed) {
+            openGame('wheel');
+          }
         }
       });
     }
 
     function updateBal() {
-      document.getElementById("user-balance").innerText = balance.toFixed(2);
       if(currentPin) {
-        db.ref("pins/" + currentPin + "/balance").set(balance);
-        db.ref("pins/" + currentPin + "/wheelUsed").set(wheelUsed);
+        db.ref("pins/" + currentPin).update({
+          balance: balance,
+          wheelUsed: wheelUsed
+        });
       }
-      if(balance <= 0 && !wheelUsed) openGame('wheel');
+      document.getElementById("user-balance").innerText = balance.toFixed(2);
     }
 
+    // Oyun dəyişmə
     function openGame(name) {
-      document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById(name + '-panel').classList.add('active');
-      if(name === 'wheel') checkWheelState();
+      document.getElementById("lobby-menu").classList.remove("active");
+      document.querySelectorAll(".game-panel").forEach(p => p.classList.remove("active"));
+      
+      if(name === 'slot') document.getElementById("slot-panel").classList.add("active");
+      if(name === 'mines') { document.getElementById("mines-panel").classList.add("active"); initMinesGrid(); }
+      if(name === 'wheel') { document.getElementById("wheel-panel").classList.add("active"); drawWheel(); checkWheelState(); }
     }
 
     function closeGame() {
-      document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById("lobby-menu").classList.add('active');
+      document.querySelectorAll(".game-panel").forEach(p => p.classList.remove("active"));
+      document.getElementById("lobby-menu").classList.add("active");
     }
 
-    /* Fruit Slot Logic with Dynamic Winning Lines & Big Win */
-    const fruitIcons = ['🍉', '🍊', '🍋'];
+    // Slot Oyunu Məntiqi
+    const fruitIcons = ['🍉', '🍒', '🍊', '🍇', '🍋', '7️⃣'];
     function spinSlot() {
       const bet = parseFloat(document.getElementById("slotBet").value);
       const res = document.getElementById("fruit-res");
       if(balance <= 0) { openGame('wheel'); return; }
-          if(isNaN(bet) || bet <= 0 || bet > balance) { res.style.color="red"; res.innerText="Balans kifayət etmir!"; return; }
-      balance -= bet; updateBal(); playSound('click');
-      res.innerText = "Fırlanır...";
+      if(isNaN(bet) || bet <= 0 || bet > balance) { res.style.color="red"; res.innerText="Balans kifayət etmir!"; return; }
 
-      // Reset previous winning lines styling
+      balance -= bet; updateBal();
+      res.style.color = "#fff"; res.innerText = "Fırlanır...";
+
       document.querySelectorAll('.slot-icon').forEach(el => el.classList.remove('winning-line'));
 
       let counter = 0;
@@ -427,20 +260,11 @@
           const win = isWin ? bet * (Math.random() < 0.2 ? 10 : 3) : 0;
 
           if(win > 0) {
-            balance += win; updateBal(); playSound('win');
+            balance += win; updateBal();
             res.style.color = "#2ecc71"; res.innerText = `🎉 UDUŞ! +${win.toFixed(2)} AZN`;
-
-            // Light up middle row icons as winning line
             for(let c=1; c<=5; c++) {
               const colEl = document.getElementById('col'+c);
               if(colEl.children[1]) colEl.children[1].classList.add('winning-line');
-            }
-
-            // Show Big Win / Mega Win popup for high multipliers
-            if(win >= bet * 5) {
-              document.getElementById("winPopupTitle").innerText = win >= bet * 10 ? "MEGA WIN!" : "BIG WIN!";
-              document.getElementById("winPopupAmount").innerText = `+${win.toFixed(2)} AZN`;
-              document.getElementById("winPopup").style.display = "flex";
             }
           } else {
             res.style.color = "#ff3b30"; res.innerText = "Uduzduz!";
@@ -449,12 +273,12 @@
       }, 70);
     }
 
-    /* Mines Logic */
+    /* Mines Logikası */
     let mineLocations = [], minesActive = false, mineBet = 0, openedCount = 0;
     function initMinesGrid() {
       const grid = document.getElementById("minesGrid");
       grid.innerHTML = "";
-      for(let i=0; i<15; i++) {
+      for(let i=0; i<9; i++) {
         const card = document.createElement("div");
         card.className = "mine-card";
         card.onclick = () => clickMine(i);
@@ -474,14 +298,14 @@
       res.innerText = "";
 
       mineLocations = [];
-      while(mineLocations.length < 4) {
-        let r = Math.floor(Math.random() * 15);
+      while(mineLocations.length < 2) {
+        let r = Math.floor(Math.random() * 9);
         if(!mineLocations.includes(r)) mineLocations.push(r);
       }
 
       initMinesGrid();
       document.getElementById("minesStartBtn").style.display = "none";
-      document.getElementById("minesCashoutBtn").style.display = "inline-block";
+      document.getElementById("minesCashoutBtn").style.display = "block";
     }
 
     function clickMine(idx) {
@@ -490,18 +314,17 @@
       const card = cards[idx];
       if(card.classList.contains("open")) return;
 
-      playSound('click');
       if(mineLocations.includes(idx)) {
         card.classList.add("boom"); card.innerText = "💣";
-        minesActive = false; playSound('boom');
+        minesActive = false;
         document.getElementById("mines-res").style.color = "#ff3b30";
         document.getElementById("mines-res").innerText = "💥 BOMBAYA DÜŞDÜNÜZ!";
-        document.getElementById("minesStartBtn").style.display = "inline-block";
+        document.getElementById("minesStartBtn").style.display = "block";
         document.getElementById("minesCashoutBtn").style.display = "none";
       } else {
         card.classList.add("open"); card.innerText = "💎";
         openedCount++;
-        const mult = (1 + openedCount * 0.4).toFixed(2);
+        const mult = (1 + openedCount * 0.5).toFixed(2);
         document.getElementById("mine-mult").innerText = mult;
       }
     }
@@ -510,47 +333,45 @@
       if(!minesActive || openedCount === 0) return;
       const mult = parseFloat(document.getElementById("mine-mult").innerText);
       const win = mineBet * mult;
-      balance += win; updateBal(); playSound('win');
+      balance += win; updateBal();
       minesActive = false;
       document.getElementById("mines-res").style.color = "#2ecc71";
       document.getElementById("mines-res").innerText = `💰 CASHOUT: +${win.toFixed(2)} AZN`;
-      document.getElementById("minesStartBtn").style.display = "inline-block";
+      document.getElementById("minesStartBtn").style.display = "block";
       document.getElementById("minesCashoutBtn").style.display = "none";
     }
 
-    /* Wheel Logic with Correct Bomb/Win Separation */
+    /* Çarx Logikası */
     const wheelSectors = [
-      {text: "50 AZN", val: 50, color: "#ffd700"},
+      {text: "20 AZN", val: 20, color: "#ffd700"},
       {text: "Bomba", val: 0, color: "#ff3b30"},
-      {text: "5 AZN", val: 5, color: "#2ecc71"},
+      {text: "2 AZN", val: 2, color: "#2ecc71"},
       {text: "Bomba", val: 0, color: "#cc2222"},
-      {text: "10 AZN", val: 10, color: "#3498db"},
-      {text: "Bomba", val: 0, color: "#ff3b30"},
-      {text: "5 AZN", val: 5, color: "#2ecc71"},
-      {text: "Bomba", val: 0, color: "#991111"}
+      {text: "5 AZN", val: 5, color: "#3498db"},
+      {text: "Bomba", val: 0, color: "#ff3b30"}
     ];
     const canvas = document.getElementById("wheelCanvas");
     const ctx = canvas.getContext("2d");
     const arc = Math.PI * 2 / wheelSectors.length;
 
     function drawWheel() {
-      ctx.clearRect(0, 0, 300, 300);
+      ctx.clearRect(0, 0, 260, 260);
       for(let i=0; i<wheelSectors.length; i++) {
         const angle = i * arc;
         ctx.beginPath();
         ctx.fillStyle = wheelSectors[i].color;
-        ctx.moveTo(150, 150);
-        ctx.arc(150, 150, 140, angle, angle + arc, false);
-        ctx.lineTo(150, 150);
+        ctx.moveTo(130, 130);
+        ctx.arc(130, 130, 120, angle, angle + arc, false);
+        ctx.lineTo(130, 130);
         ctx.fill();
         ctx.stroke();
 
         ctx.save();
-        ctx.translate(150, 150);
+        ctx.translate(130, 130);
         ctx.rotate(angle + arc / 2);
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 12px Tahoma";
-        ctx.fillText(wheelSectors[i].text, 65, 5);
+        ctx.font = "bold 11px Tahoma";
+        ctx.fillText(wheelSectors[i].text, 55, 5);
         ctx.restore();
       }
     }
@@ -565,7 +386,7 @@
         spinBtn.style.display = "none";
         statusMsg.innerText = "Çarx yalnız balans 0 olanda aktivləşir!";
       } else {
-        spinBtn.style.display = "inline-block";
+        spinBtn.style.display = "block";
         statusMsg.innerText = "Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!";
       }
     }
@@ -575,13 +396,10 @@
       if(wheelUsed || balance > 0) return;
       wheelUsed = true;
       document.getElementById("wheelSpinBtn").style.display = "none";
-      playSound('wheel');
 
-      let winningIndex = Math.random() < 0.4 ? 0 : (Math.random() < 0.5 ? 2 : 4);
-      if(Math.random() < 0.3) winningIndex = 1;
-
+      let winningIndex = Math.random() < 0.5 ? 0 : 2; // Qazanma ehtimalı
       const spins = 5;
-      const degrees = spins * 360 + (wheelSectors.length - winningIndex) * (360 / wheelSectors.length) - 22;
+      const degrees = spins * 360 + (wheelSectors.length - winningIndex) * (360 / wheelSectors.length) - 30;
       startAngle += degrees;
       
       canvas.style.transition = "transform 4s cubic-bezier(0.15, 0.85, 0.12, 0.99)";
@@ -594,20 +412,19 @@
         if(prize.val > 0) {
           balance += prize.val; 
           updateBal(); 
-          playSound('win');
           res.style.color = "#2ecc71";
           res.innerText = `🎁 ÇARXDAN QAZANDINIZ: +${prize.val} AZN!`;
         } else {
-          playSound('boom');
           res.style.color = "#ff3b30";
-          res.innerText = "💥 Təəssüf, bomba çıxdı! Qazanc yoxdur.";
+           
+          res.innerText = "💥 Təəssüf";
         }
         document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız bitdi.";
         updateBal();
       }, 4000);
     }
 
-    /* Withdraw Modal Management */
+    // Çıxarış Modal
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
     function closeWithdrawModal() { document.getElementById("withdrawModal").style.display = "none"; }
     function submitWithdraw() {
