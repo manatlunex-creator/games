@@ -2,79 +2,65 @@
 <html lang="az">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Kral Games - Admin Panel</title>
-
-  <!-- Firebase Compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { background: #0c0b10; color: #fff; padding: 15px; display: flex; justify-content: center; }
-    .admin-card { width: 100%; max-width: 480px; background: #15131d; border: 2px solid #ff3b30; border-radius: 15px; padding: 20px; box-shadow: 0 0 20px rgba(255, 59, 48, 0.3); }
-    h2, h3 { color: #ffd700; text-align: center; margin-bottom: 15px; font-size: 18px; }
-    
-    /* Login */
-    #login-box { display: block; text-align: center; }
-    input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #443c59; background: #09080d; color: #fff; font-size: 15px; text-align: center; outline: none; }
-    .btn { width: 90%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #ff3b30, #c81912); color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
-    
-    /* Panel */
-    #panel-box { display: none; }
-    .section { background: #09080d; border: 1px solid #2a243d; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-    .section h4 { color: #2ecc71; margin-bottom: 10px; border-bottom: 1px solid #1f1b2e; padding-bottom: 5px; font-size: 14px; }
-    .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-    .btn-red { background: linear-gradient(135deg, #ff3b30, #c81912); }
-    .btn-sm { width: 48%; display: inline-block; padding: 10px; font-size: 13px; margin-top: 5px; }
-    .list-item { display: flex; justify-content: space-between; align-items: center; background: #1f1b2e; padding: 10px; border-radius: 6px; margin-top: 6px; font-size: 13px; border: 1px solid #332d4a; }
+    body { background: #07060b; color: #fff; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+    .admin-container { width: 100%; max-width: 500px; background: #0c0a14; border: 1px solid #231f3d; border-radius: 16px; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    h2 { color: #ff3b30; text-align: center; margin-bottom: 20px; font-size: 20px; text-shadow: 0 0 10px rgba(255,59,48,0.5); }
+    .section-box { background: #141120; border: 1px solid #292442; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+    .section-box h3 { color: #ffd700; font-size: 15px; margin-bottom: 12px; border-bottom: 1px solid #231f3d; padding-bottom: 6px; }
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #363052;
+      background: #07060b; color: #fff; font-size: 15px; margin-bottom: 10px; outline: none;
+    }
+    .btn-gold {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      background: linear-gradient(180deg, #ffd700 0%, #ff9900 100%);
+      color: #000; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-gold:active { transform: scale(0.98); }
+    .pin-row { display: flex; justify-content: space-between; align-items: center; background: #07060b; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #231f3d; font-size: 13px; }
+    .pin-actions { display: flex; gap: 6px; }
+    .btn-del { background: #ff3b30; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
+    .btn-edit { background: #3498db; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
+    .res-msg { margin-top: 8px; font-size: 13px; font-weight: bold; text-align: center; min-height: 18px; }
   </style>
 </head>
 <body>
 
-  <div class="admin-card">
-    <h2>👑 KRAL GAMES ADMIN 👑</h2>
+  <div class="admin-container">
+    <h2>👑 KRAL GAMES - ADMIN PANEL 👑</h2>
 
-    <!-- GİRİŞ FORMU -->
-    <div id="login-box">
-      <input type="text" id="adminUser" placeholder="İstifadəçi Adı">
-      <input type="password" id="adminPass" placeholder="Şifrə">
-      <button class="btn" onclick="loginAdmin()">PANELƏ GİRİŞ</button>
-      <div id="login-err" style="color:#ff3b30; margin-top:10px; font-weight:bold; font-size:13px;"></div>
+    <!-- 1. PIN və Balans İdarəetməsi -->
+    <div class="section-box">
+      <h3>İstifadəçi PIN və Balans Yarat</h3>
+      <input type="text" id="adminPin" placeholder="PIN Kod (məs: 7777)">
+      <input type="number" id="adminBalance" placeholder="İlkin Balans (AZN)" step="0.1">
+      <button class="btn-gold" onclick="createOrUpdatePin()">PIN YARAT / BALANS VUR</button>
+      <div class="res-msg" id="pin-res"></div>
     </div>
 
-    <!-- İDARƏ PANELİ -->
-    <div id="panel-box">
-      
-      <!-- 1. PIN & Canlı Balans İdarəsi -->
-      <div class="section">
-        <h4>🔑 PIN Kodlar və Canlı Balans</h4>
-        <input type="text" id="newPin" placeholder="Yeni PIN (məs: 2110)">
-        <button class="btn btn-green" onclick="addPin()">PIN KODU ƏLAVƏ ET</button>
-        <div id="pinList" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
-      </div>
-
-      <!-- 2. Balans Artırmaq / Silmək -->
-      <div class="section">
-        <h4>💰 Balans Əlavə Et / Çıxar</h4>
-        <input type="text" id="targetPin" placeholder="PIN Kodu daxil et">
-        <input type="number" id="balanceAmt" placeholder="Məbləğ (AZN)">
-        <div style="display: flex; justify-content: space-between;">
-          <button class="btn btn-green btn-sm" onclick="updateUserBal(true)">BALANS ARTIR</button>
-          <button class="btn btn-red btn-sm" onclick="updateUserBal(false)">BALANS SİL</button>
-        </div>
-      </div>
-
-      <!-- 3. Jackpot Ayarları -->
-      <div class="section">
-        <h4>🎰 Oyun Ayarları və Jackpot</h4>
-        <label style="font-size: 11px; color: #aaa; display:block; text-align:left;">Cari Jackpot (AZN):</label>
-        <input type="number" id="jackpotInput" placeholder="Nüm: 250">
-        <button class="btn" onclick="saveGameSettings()">YADDA SAXLA</button>
-      </div>
-
-      <button class="btn btn-red" onclick="location.reload()" style="width: 100%;">ÇIXIŞ ET</button>
+    <!-- 2. Oyun Şansları İdarəetməsi -->
+    <div class="section-box">
+      <h3>Oyun Şansı (Uduş Faizləri)</h3>
+      <label style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">Slot Uduş Şansı (%): <span id="chanceVal" style="color:#ffd700; font-weight:bold;">35</span>%</label>
+      <input type="range" id="winChanceRange" min="0" max="100" value="35" style="width:100%; margin-bottom: 10px;" oninput="document.getElementById('chanceVal').innerText=this.value">
+      <button class="btn-gold" onclick="saveWinChance()">ŞANSI YADDA SAXLA</button>
+      <div class="res-msg" id="chance-res"></div>
     </div>
+
+    <!-- 3. Aktiv PIN-lər və Canlı Balanslar -->
+    <div class="section-box">
+      <h3>Aktiv PIN Siyahısı & Canlı Balanslar</h3>
+      <div id="pinsList" style="max-height: 250px; overflow-y: auto;">
+        <span style="color: #777; font-size: 13px;">Yüklənir...</span>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -82,99 +68,93 @@
       apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
       authDomain: "game-44f1a.firebaseapp.com",
       databaseURL: "https://game-44f1a-default-rtdb.firebaseio.com",
-      projectId: "game-44f1a",
-      storageBucket: "game-44f1a.firebasestorage.app",
-      messagingSenderId: "121003848252",
-      appId: "1:121003848252:web:b9b2cea6c9d9682e89c939"
+      projectId: "game-44f1a"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function loginAdmin() {
-      const u = document.getElementById("adminUser").value.trim();
-      const p = document.getElementById("adminPass").value.trim();
-
-      if(u === "Escobar211_98" && p === "AA211_48") {
-        document.getElementById("login-box").style.display = "none";
-        document.getElementById("panel-box").style.display = "block";
-        loadPins();
-        loadSettings();
-      } else {
-        document.getElementById("login-err").innerText = "İstifadəçi adı və ya şifrə səhvdir!";
+    // Şansı yüklə
+    db.ref("settings/winChance").on("value", snap => {
+      if(snap.exists()) {
+        document.getElementById("winChanceRange").value = snap.val();
+        document.getElementById("chanceVal").innerText = snap.val();
       }
+    });
+
+    // Şansı yadda saxla
+    function saveWinChance() {
+      const val = parseInt(document.getElementById("winChanceRange").value);
+      db.ref("settings/winChance").set(val).then(() => {
+        const res = document.getElementById("chance-res");
+        res.style.color = "#2ecc71";
+        res.innerText = "Uduş şansı yeniləndi!";
+        setTimeout(() => res.innerText = "", 2000);
+      });
     }
 
-    function addPin() {
-      const pin = document.getElementById("newPin").value.trim();
-      if(!pin) return alert("PIN yazın!");
+    // PIN yarat və ya balans artır
+    function createOrUpdatePin() {
+      const pin = document.getElementById("adminPin").value.trim();
+      const balance = parseFloat(document.getElementById("adminBalance").value);
+      const res = document.getElementById("pin-res");
 
-      db.ref("pins/" + pin).set({
-        active: true,
-        balance: 0.00
+      if(!pin) { res.style.color = "#ff3b30"; res.innerText = "PIN daxil edin!"; return; }
+      if(isNaN(balance) || balance < 0) { res.style.color = "#ff3b30"; res.innerText = " düzgün balans yazın!"; return; }
+
+      db.ref("pins/" + pin).update({
+        balance: balance,
+        wheelUsed: false
       }).then(() => {
-        document.getElementById("newPin").value = "";
+        res.style.color = "#2ecc71";
+        res.innerText = `PIN uğurla ${balance} AZN ilə qeydə alındı!`;
+        document.getElementById("adminPin").value = "";
+        document.getElementById("adminBalance").value = "";
+        setTimeout(() => res.innerText = "", 2500);
       });
     }
 
-    function loadPins() {
-      db.ref("pins").on("value", (snapshot) => {
-        const list = document.getElementById("pinList");
-        list.innerHTML = "";
-        snapshot.forEach((child) => {
-          const p = child.key;
-          const val = child.val();
-          const bal = val && val.balance !== undefined ? parseFloat(val.balance).toFixed(2) : "0.00";
-          list.innerHTML += `
-            <div class="list-item">
-              <span>📌 <b>${p}</b> | Balans: <b style="color:#2ecc71;">${bal} AZN</b></span>
-              <button style="background:#ff3b30; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="deletePin('${p}')">SİL</button>
-            </div>
-          `;
-        });
-      });
-    }
+    // Canlı PIN-ləri və balansları izlə, həmçinin sil
+    db.ref("pins").on("value", snap => {
+      const listDiv = document.getElementById("pinsList");
+      listDiv.innerHTML = "";
+      
+      if(!snap.exists()) {
+        listDiv.innerHTML = '<span style="color: #777; font-size: 13px;">Aktiv PIN yoxdur.</span>';
+        return;
+      }
 
+      snap.forEach(childSnap => {
+        const pinCode = childSnap.key;
+        const data = childSnap.val();
+        const bal = data.balance || 0;
+
+        const row = document.createElement("div");
+        row.className = "pin-row";
+        row.innerHTML = `
+          <span>🔑 <b>${pinCode}</b> - <span style="color:#2ecc71;">${bal.toFixed(2)} AZN</span></span>
+          <div class="pin-actions">
+            <button class="btn-edit" onclick="editPinBalance('${pinCode}', ${bal})">Balans</button>
+            <button class="btn-del" onclick="deletePin('${pinCode}')">Sil</button>
+          </div>
+        `;
+        listDiv.appendChild(row);
+      });
+    });
+
+    // PIN-i silmək funksiyası
     function deletePin(pin) {
-      if(confirm(pin + " PIN kodunu silmək istədiyinizdən əminsiniz?")) {
+      if(confirm(`"${pin}" kodunu silmək istədiyinizə əminsiniz?`)) {
         db.ref("pins/" + pin).remove();
       }
     }
 
-    function updateUserBal(isAdd) {
-      const pin = document.getElementById("targetPin").value.trim();
-      const amt = parseFloat(document.getElementById("balanceAmt").value);
-
-      if(!pin || isNaN(amt)) return alert("PIN və məbləği tam yazın!");
-
-      db.ref("pins/" + pin).once("value").then((snapshot) => {
-        if(!snapshot.exists()) return alert("Bu PIN tapılmadı!");
-        
-        let currentBal = snapshot.val().balance || 0;
-        let newBal = isAdd ? (currentBal + amt) : (currentBal - amt);
-        if(newBal < 0) newBal = 0;
-
-        db.ref("pins/" + pin + "/balance").set(newBal).then(() => {
-          document.getElementById("targetPin").value = "";
-          document.getElementById("balanceAmt").value = "";
-        });
-      });
-    }
-
-    function saveGameSettings() {
-      const jackpot = document.getElementById("jackpotInput").value;
-      db.ref("settings").update({
-        jackpot: jackpot ? parseFloat(jackpot) : 250
-      }).then(() => alert("Jackpot yadda saxlanıldı!"));
-    }
-
-    function loadSettings() {
-      db.ref("settings").once("value").then((snapshot) => {
-        if(snapshot.exists()) {
-          const data = snapshot.val();
-          if(data.jackpot) document.getElementById("jackpotInput").value = data.jackpot;
-        }
-      });
+    // Balansı cəld dəyişmək üçün prompt
+    function editPinBalance(pin, currentBal) {
+      const newBal = prompt(`"${pin}" nömrəli PIN üçün yeni balans daxil edin:`, currentBal);
+      if(newBal !== null && !isNaN(newBal)) {
+        db.ref("pins/" + pin + "/balance").set(parseFloat(newBal));
+      }
     }
   </script>
 </body>
