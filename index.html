@@ -245,7 +245,6 @@
           initMinesGrid();
           drawWheel();
           
-          // Canlı dinləyici - admin və ya başqa yerdən balans dəyişəndə avtomatik yenilənsin
           db.ref("pins/" + currentPin + "/balance").on("value", (snap) => {
             if(snap.exists()) {
               balance = snap.val();
@@ -452,58 +451,69 @@
 
       let rand = Math.random() * 100;
       let winningIndex = 1;
-      if(rand < 3) winningIndex = 0; // 100 AZN (3%)
-      else if(rand < 33) winningIndex = (Math.random() < 0.5 ? 4 : 8); // 20 AZN (30%)
-      else if(rand < 81) winningIndex = (Math.random() < 0.5 ? 2 : 6); // 5 AZN (48%)
-           // 416-cı sətirdən etibarən bura qədər olan hissəni bununla əvəz et:
-          } else if (rand < 33) {
-            winningIndex = (Math.random() < 0.5 ? 4 : 8); // 2 burdan
-          } else if (rand < 55) {
-            winningIndex = (Math.random() < 0.5 ? 5 : 9);
-          } else if (rand < 75) {
-            winningIndex = (Math.random() < 0.5 ? 6 : 10);
-          } else {
-            winningIndex = (Math.random() < 0.5 ? 7 : 11);
-          }
+      if(rand < 3) winningIndex = 0;
+      else if(rand < 33) winningIndex = (Math.random() < 0.5 ? 4 : 8);
+      else if(rand < 81) winningIndex = (Math.random() < 0.5 ? 2 : 6);
+      else {
+        const bombs = [1, 3, 5, 7, 9];
+        winningIndex = bombs[Math.floor(Math.random() * bombs.length)];
+      }
 
-          // Çarxın fırlanma animasiyasını işə salırıq
-          startSpinning(winningIndex);
-        }, 1500); // 1.5 saniyəlik saxta yükləmə/gözləmə effekti
-      });
+          function checkWheelState() {
+      if(wheelUsed || balance > 0) {
+        document.getElementById("wheelSpinBtn").style.display = "none";
+        if(wheelUsed) document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız artıq istifadə olunub!";
+        else document.getElementById("wheelStatusMsg").innerText = "Çarx yalnız balans 0 olanda aktivləşir!";
+      } else {
+        document.getElementById("wheelSpinBtn").style.display = "inline-block";
+      }
     }
 
-    // Çarxın fırlanma məntiqi
-    function startSpinning(targetIndex) {
-      const wheel = document.getElementById("wheel");
-      if (!wheel) return;
+    let startAngle = 0;
+    function spinWheel() {
+      if(wheelUsed || balance > 0) return;
+      wheelUsed = true;
+      document.getElementById("wheelSpinBtn").style.display = "none";
+      playSound('click');
 
-      // Fırlanma dərəcələrinin hesablanması
-      const totalSectors = 12; // Ümumi sektor sayı
-      const degreesPerSector = 360 / totalSectors;
+      let rand = Math.random() * 100;
+      let winningIndex = 1;
+      if(rand < 3) winningIndex = 0;
+      else if(rand < 33) winningIndex = (Math.random() < 0.5 ? 4 : 8);
+      else if(rand < 81) winningIndex = (Math.random() < 0.5 ? 2 : 6);
+      else {
+        const bombs = [1, 3, 5, 7, 9];
+        winningIndex = bombs[Math.floor(Math.random() * bombs.length)];
+      }
+
+      const spins = 5;
+      const degrees = spins * 360 + (wheelSectors.length - winningIndex) * (360 / wheelSectors.length) - 15;
+      startAngle += degrees;
       
-      // Hər sektorun mərkəzinə düşməsi üçün əlavə hesab
-      const extraSpins = 5 * 360; // Ən az 5 tam dövr vurması üçün
-      const targetAngle = extraSpins + (360 - (targetIndex * degreesPerSector)) - (degreesPerSector / 2);
+      canvas.style.transition = "transform 4s cubic-bezier(0.15, 0.85, 0.12, 0.99)";
+      canvas.style.transform = `rotate(${startAngle}deg)`;
 
-      wheel.style.transition = "transform 4s cubic-bezier(0.15, 0.90, 0.15, 1.0)";
-      wheel.style.transform = `rotate(${targetAngle}deg)`;
-
-      // Fırlanma bitdikdən sonra nəticənin yoxlanılması
       setTimeout(() => {
-        isSpinning = false;
-        checkWinResult(targetIndex);
+        const prize = wheelSectors[winningIndex];
+        const res = document.getElementById("game-res");
+        if(prize.val > 0) {
+          balance += prize.val; updateBal(); playSound('win');
+          res.style.color = "#2ecc71";
+          res.style.display = "block";
+          res.innerText = `🎁 ÇARXDAN QAZANDINIZ: +${prize.val} AZN!`;
+        } else {
+          playSound('boom');
+          res.style.color = "#ff3b30";
+          res.style.display = "block";
+          res.innerText = "💥 Təəssüf, bomba çıxdı!";
+        }
+        document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız bitdi.";
       }, 4000);
     }
 
-    // Nəticənin balansdan çıxılması və ya əlavə olunması
-    function checkWinResult(index) {
-      // Burada qazanc və ya uduzma məntiqini yaza bilərsən
-      // Məsələn: seçilmiş sektorun dəyərinə görə balansı yenilə
-      console.log("Qalib gələn sektor indeksi: " + index);
-      
-      // Balansı serverdən yenidən oxumaq və ya UI-ı yeniləmək üçün funksiyalar çağırıla bilər
-      if (typeof loadUserBalance === 'function') {
-        loadUserBalance();
+    function checkZeroBalance() {
+      if(balance <= 0 && !wheelUsed) {
+        openGame('wheel');
       }
     }
   </script>
