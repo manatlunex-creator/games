@@ -14,7 +14,6 @@
     body { background: #0c0b10; color: #fff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 10px; }
     .container { width: 100%; max-width: 440px; text-align: center; }
 
-    /* Pin-Up / 1win Style Top Bar */
     .top-bar {
       display: flex; justify-content: space-between; align-items: center;
       background: #181622; border: 1px solid #2a263d; border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
@@ -26,7 +25,6 @@
       box-shadow: 0 0 10px rgba(255, 59, 48, 0.4);
     }
 
-    /* PIN Screen */
     #pin-screen {
       background: #14121b; border: 2px solid #ff3b30; padding: 30px 20px; border-radius: 16px; margin-top: 40px;
       box-shadow: 0 0 20px rgba(255, 59, 48, 0.3);
@@ -42,7 +40,6 @@
       box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
     }
 
-    /* Game Lobby Grid (Pin-Up Style) */
     #game-screen { display: none; width: 100%; }
     .lobby-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;
@@ -56,7 +53,6 @@
     .game-card span { font-size: 28px; display: block; margin-bottom: 8px; }
     .game-card h4 { font-size: 14px; color: #fff; }
 
-    /* Game Panels */
     .game-panel {
       background: #15131d; border: 2px solid #2a243d; border-radius: 15px; padding: 15px; display: none; position: relative;
     }
@@ -66,7 +62,6 @@
       font-size: 12px; cursor: pointer; float: left; margin-bottom: 10px; font-weight: bold;
     }
 
-    /* VIP Fruit Slot UI */
     .paytable {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
       background: #09080d; padding: 6px; border-radius: 8px; border: 1px solid #332d4a; margin-bottom: 10px; font-size: 10px; color: #ffd700;
@@ -82,7 +77,6 @@
     }
     .slot-icon { font-size: 26px; height: 40px; line-height: 40px; background: #221e2e; border-radius: 4px; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
 
-    /* Wheel UI */
     .wheel-container { position: relative; width: 260px; height: 260px; margin: 15px auto; }
     #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
     .wheel-pointer {
@@ -90,7 +84,6 @@
       width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #ff3b30; z-index: 10;
     }
 
-    /* Mines UI */
     .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0; }
     .mine-card {
       aspect-ratio: 1; background: #221e2e; border: 1px solid #3d3454; border-radius: 8px;
@@ -117,13 +110,12 @@
     <!-- Main Game Screen -->
     <div id="game-screen">
       
-      <!-- Top Bar -->
       <div class="top-bar">
         <div class="balance-info">💰 <span id="user-balance">0.00</span> AZN</div>
         <a href="https://t.me/gamesadmin1" target="_blank" class="deposit-btn">Hesabı Artırmaq</a>
       </div>
 
-      <!-- LOBBY / GAMES MENU -->
+      <!-- LOBBY -->
       <div id="lobby-menu" class="game-panel active" style="display:block;">
         <h3 style="color: #ffd700; margin-bottom: 12px; font-size: 15px; text-align: left;">🎮 KAZİNO OYUNLARI</h3>
         <div class="lobby-grid">
@@ -195,7 +187,6 @@
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
       authDomain: "game-44f1a.firebaseapp.com",
@@ -211,9 +202,8 @@
 
     let currentPin = "";
     let balance = 0;
-    let wheelUsed = false; // Yalnız 1 dəfə yoxlamaq üçün
+    let wheelUsed = false;
 
-    // Audio Səs Effektləri (Web Audio API)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(type) {
       if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -240,7 +230,6 @@
       }
     }
 
-    // --- PIN GİRİŞİ ---
     function verifyPin() {
       const pin = document.getElementById("pinInput").value.trim();
       const status = document.getElementById("status");
@@ -255,6 +244,19 @@
           updateBal();
           initMinesGrid();
           drawWheel();
+          
+          // Canlı dinləyici - admin və ya başqa yerdən balans dəyişəndə avtomatik yenilənsin
+          db.ref("pins/" + currentPin + "/balance").on("value", (snap) => {
+            if(snap.exists()) {
+              balance = snap.val();
+              document.getElementById("user-balance").innerText = balance.toFixed(2);
+              if(balance <= 0 && !wheelUsed) {
+                openGame('wheel');
+                document.getElementById("wheelSpinBtn").style.display = "inline-block";
+                document.getElementById("wheelStatusMsg").innerText = "Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!";
+              }
+            }
+          });
         } else {
           status.style.color="#ff3b30"; status.innerText="Səhv PIN Kodu!";
         }
@@ -267,7 +269,6 @@
         db.ref("pins/" + currentPin + "/balance").set(balance);
       }
       
-      // Balans 0 olanda və çarx hələ işlənməyibsə Bonus Çarxını aç
       if(balance <= 0 && !wheelUsed) {
         openGame('wheel');
         document.getElementById("wheelSpinBtn").style.display = "inline-block";
@@ -275,7 +276,6 @@
       }
     }
 
-    // --- NAVİQASİYA ---
     function openGame(name) {
       document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
       document.getElementById(name + '-panel').classList.add('active');
@@ -289,7 +289,6 @@
       document.getElementById("game-res").innerText = "";
     }
 
-    // --- 1. VIP FRUIT SLOT ---
     const icons = ['🍉', '7️⃣', '🍇', '🍒', '🍊', '🍋'];
     function spinSlot() {
       const bet = parseFloat(document.getElementById("slotBet").value);
@@ -324,7 +323,6 @@
       }, 70);
     }
 
-    // --- 2. MINES GAME ---
     let mineLocations = [];
     let minesActive = false;
     let mineBet = 0;
@@ -351,7 +349,7 @@
       document.getElementById("mine-mult").innerText = "1.00";
 
       mineLocations = [];
-      while(mineLocations.length < 5) { // 5 bomba
+      while(mineLocations.length < 5) {
         let r = Math.floor(Math.random() * 15);
         if(!mineLocations.includes(r)) mineLocations.push(r);
       }
@@ -396,8 +394,6 @@
       document.getElementById("minesCashoutBtn").style.display = "none";
     }
 
-    // --- 3. BONUS ÇARX (WHEEL) ---
-    // Sektorlar: 100 AZN (1), 20 AZN (2), 5 AZN (2), Bomba/Uduşsuz (5) = Cəmi 10 sektor
     const wheelSectors = [
       {text: "100 AZN", val: 100, color: "#ffd700"},
       {text: "Bomba", val: 0, color: "#ff3b30"},
@@ -454,11 +450,12 @@
       document.getElementById("wheelSpinBtn").style.display = "none";
       playSound('click');
 
-      // Təyin olunan şanslara uyğun sektor seçimi (100 AZN: 3%, 20 AZN: 30%, 5 AZN: 48%, Bomba: 19%)
       let rand = Math.random() * 100;
-      let winningIndex = 1; // default bomba
+      let winningIndex = 1;
       if(rand < 3) winningIndex = 0; // 100 AZN (3%)
-                // 416-cı sətirdən etibarən bura qədər olan hissəni bununla əvəz et:
+      else if(rand < 33) winningIndex = (Math.random() < 0.5 ? 4 : 8); // 20 AZN (30%)
+      else if(rand < 81) winningIndex = (Math.random() < 0.5 ? 2 : 6); // 5 AZN (48%)
+           // 416-cı sətirdən etibarən bura qədər olan hissəni bununla əvəz et:
           } else if (rand < 33) {
             winningIndex = (Math.random() < 0.5 ? 4 : 8); // 2 burdan
           } else if (rand < 55) {
