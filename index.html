@@ -76,7 +76,6 @@
 
         .spin-controls-flex { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 6px; }
         
-        /* 1WIN STYLE ROUND START BUTTON */
         .spin-btn-round { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, #d97706 40%, #7c2d12 100%); border: 3px solid #fef08a; box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.8); cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; font-weight: 900; font-size: 13px; text-transform: uppercase; transition: transform 0.1s; }
         .spin-btn-round:active { transform: scale(0.92); }
         .spin-btn-round span { font-size: 18px; line-height: 1; }
@@ -100,17 +99,16 @@
 
     <!-- GİRİŞ MODALI -->
     <div id="loginModal">
-        <div class="login-box">
+        <form class="login-box" onsubmit="event.preventDefault(); verifyPin();">
             <div class="login-title">KRAL GAMES</div>
             <div class="login-sub">Daxil olmaq üçün 6 rəqəmli PIN yazın</div>
-            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******">
-            <button class="pin-btn" onclick="verifyPin()">GİRİŞ ET</button>
-        </div>
+            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******" required>
+            <button type="submit" class="pin-btn">GİRİŞ ET</button>
+        </form>
     </div>
 
     <!-- ƏSAS İNTERFEYS -->
     <div id="appContent">
-        <!-- CANLI JACKPOT BANNER -->
         <div class="jackpot-banner">
             <div class="jackpot-title">⚡ CANLI GRAND JACKPOT ⚡</div>
             <div class="jackpot-val" id="jackpotDisplay">145.20 ₼</div>
@@ -137,7 +135,6 @@
             </div>
         </div>
 
-        <!-- SAĞ ALT ÇARX DÜYMƏSİ -->
         <div class="wheel-float-btn" onclick="openGame('wheelModal')">🎡</div>
     </div>
 
@@ -155,7 +152,7 @@
         </div>
     </div>
 
-    <!-- 1WIN CASINO MEYVƏ OYUNU MODAL (REAL HD SYMBOLS) -->
+    <!-- 1WIN CASINO MEYVƏ OYUNU MODAL -->
     <div id="fruitModal" class="game-modal">
         <div class="modal-top">
             <button class="back-btn" onclick="closeGame('fruitModal')">❮ Geri</button>
@@ -164,7 +161,6 @@
         </div>
 
         <div class="fruit-game-wrap">
-            <!-- ÖDƏNİŞ CƏDVƏLİ -->
             <div class="paytable-grid">
                 <div class="pay-card">
                     <img src="https://cdn-icons-png.flaticon.com/512/3137/3137044.png" alt="Watermelon">
@@ -194,7 +190,6 @@
 
             <div class="slot-title-banner">LUCKY 432 WAYS</div>
 
-            <!-- SLOT BARABANLARI (5 SÜTUN) -->
             <div class="slot-frame-1win">
                 <div class="reels-5-col">
                     <div class="reel-column">
@@ -225,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- IDARƏETMƏ PANELİ -->
             <div class="slot-controls-area">
                 <div class="slot-stats-row">
                     <div class="stat-box">
@@ -269,35 +263,44 @@
         let currentPin = null;
         let jackpotVal = 145.20;
 
-        // HD MEYVƏ VƏ NÖMRƏ ŞƏKİLLƏRİ BAZASI (1WIN STİLİ)
         const slotImages = [
-            'https://cdn-icons-png.flaticon.com/512/3137/3137044.png', // Watermelon
-            'https://cdn-icons-png.flaticon.com/512/236/236822.png',   // 7️⃣
-            'https://cdn-icons-png.flaticon.com/512/7210/7210826.png', // Grape
-            'https://cdn-icons-png.flaticon.com/512/1135/1135528.png', // Plum
-            'https://cdn-icons-png.flaticon.com/512/6866/6866538.png', // Lemon
-            'https://cdn-icons-png.flaticon.com/512/1998/1998614.png', // Cherry
-            'https://cdn-icons-png.flaticon.com/512/1728/1728723.png'  // Orange
+            'https://cdn-icons-png.flaticon.com/512/3137/3137044.png',
+            'https://cdn-icons-png.flaticon.com/512/236/236822.png',
+            'https://cdn-icons-png.flaticon.com/512/7210/7210826.png',
+            'https://cdn-icons-png.flaticon.com/512/1135/1135528.png',
+            'https://cdn-icons-png.flaticon.com/512/6866/6866538.png',
+            'https://cdn-icons-png.flaticon.com/512/1998/1998614.png',
+            'https://cdn-icons-png.flaticon.com/512/1728/1728723.png'
         ];
 
-        const payMultipliers = { 
-            0: 100, // Watermelon
-            1: 500, // 7
-            2: 20,  // Grape
-            3: 10,  // Plum
-            4: 8,   // Lemon
-            5: 8,   // Cherry
-            6: 5    // Orange
-        };
+        const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
 
         function getUsersDB() { 
-            return JSON.parse(localStorage.getItem('kral_users_db')) || {}; 
+            try {
+                return JSON.parse(localStorage.getItem('kral_users_db')) || {};
+            } catch (e) {
+                return {};
+            }
         }
 
-        // TAM DUZƏLDİLMİŞ VƏ ZƏMANƏTLİ PIN YOXLAMA FUNKSİYASI
         function verifyPin() {
             const pinInput = document.getElementById('pinInput');
-                    /* REAL CASINO SLOT SPIN LOGİKA */
+            if (!pinInput) return;
+            
+            const pin = pinInput.value.trim();
+            if (!pin) {
+                alert('Zəhmət olmasa 6 rəqəmli PIN kodu daxil edin!');
+                return;
+            }
+
+            const db = getUsersDB();
+
+            if (db && db[pin] !== undefined) {
+                currentPin = pin;
+                let userVal = db[pin];
+                
+                if (typeof userVal === 'object' && userVal !== null) {
+                          /* REAL CASINO SLOT SPIN LOGİKA */
         function spinSlot() {
             if (balance < 1) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
             balance -= 1; syncBalance();
