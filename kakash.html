@@ -65,7 +65,7 @@
         </div>
       </div>
 
-      <!-- 3. Oyunda Şans və Jackpot Ayarları -->
+      <!-- 3. Jackpot Ayarları -->
       <div class="section">
         <h4>🎰 Oyun Ayarları və Jackpot</h4>
         <label style="font-size: 11px; color: #aaa; display:block; text-align:left;">Cari Jackpot (AZN):</label>
@@ -78,7 +78,6 @@
   </div>
 
   <script>
-    // Firebase Konfiqurasiya
     const firebaseConfig = {
       apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
       authDomain: "game-44f1a.firebaseapp.com",
@@ -92,7 +91,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 1. Panel Girişi
     function loginAdmin() {
       const u = document.getElementById("adminUser").value.trim();
       const p = document.getElementById("adminPass").value.trim();
@@ -107,7 +105,6 @@
       }
     }
 
-    // 2. PIN Yaratmaq
     function addPin() {
       const pin = document.getElementById("newPin").value.trim();
       if(!pin) return alert("PIN yazın!");
@@ -120,7 +117,6 @@
       });
     }
 
-    // PIN Siyahısı və Canlı Balans Dinləyicisi (on value)
     function loadPins() {
       db.ref("pins").on("value", (snapshot) => {
         const list = document.getElementById("pinList");
@@ -128,7 +124,7 @@
         snapshot.forEach((child) => {
           const p = child.key;
           const val = child.val();
-          const bal = val.balance !== undefined ? parseFloat(val.balance).toFixed(2) : "0.00";
+          const bal = val && val.balance !== undefined ? parseFloat(val.balance).toFixed(2) : "0.00";
           list.innerHTML += `
             <div class="list-item">
               <span>📌 <b>${p}</b> | Balans: <b style="color:#2ecc71;">${bal} AZN</b></span>
@@ -145,7 +141,6 @@
       }
     }
 
-    // 3. Balans Artırmaq / Silmək
     function updateUserBal(isAdd) {
       const pin = document.getElementById("targetPin").value.trim();
       const amt = parseFloat(document.getElementById("balanceAmt").value);
@@ -166,7 +161,6 @@
       });
     }
 
-    // 4. Jackpot Ayarları
     function saveGameSettings() {
       const jackpot = document.getElementById("jackpotInput").value;
       db.ref("settings").update({
