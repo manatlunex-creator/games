@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kral Games Casino</title>
+    <!-- Firebase SDK (Version 8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: #060204; color: #ffffff; overflow-x: hidden; padding-bottom: 70px; }
@@ -15,6 +18,7 @@
         .login-sub { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
         .pin-input { width: 100%; padding: 14px; background: #1a080e; border: 1px solid #7f1d1d; border-radius: 10px; color: #fff; font-size: 22px; text-align: center; letter-spacing: 6px; font-weight: bold; outline: none; margin-bottom: 15px; }
         .pin-btn { width: 100%; background: linear-gradient(135deg, #ef4444, #b91c1c); border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5); }
+        .pin-btn:disabled { opacity: 0.6; cursor: wait; }
 
         #appContent { display: none; }
 
@@ -47,46 +51,40 @@
         .modal-top { background: #120509; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #270913; }
         .back-btn { background: #270913; border: 1px solid #7f1d1d; color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* OYUN DİZAYNI (1WIN CASINO SLOTS) */
+        /* OYUN DİZAYNI */
         .fruit-game-wrap { background: radial-gradient(circle, #250205 0%, #050002 100%); padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        
         .paytable-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
         .pay-card { background: rgba(30, 0, 5, 0.8); border: 1.5px solid #ef4444; border-radius: 8px; padding: 4px 6px; display: flex; align-items: center; justify-content: space-between; box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.3); }
-        .pay-card img { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.4)); }
+        .pay-card img { width: 34px; height: 34px; object-fit: contain; }
         .pay-info { text-align: right; font-size: 11px; color: #e2e8f0; font-weight: bold; line-height: 1.2; }
         .pay-info span { color: #f59e0b; font-weight: 900; }
 
-        .slot-title-banner { text-align: center; font-size: 20px; font-weight: 900; color: #fcd34d; text-shadow: 0 0 10px #f59e0b, 0 0 20px #ef4444; margin: 4px 0; letter-spacing: 1px; font-style: italic; }
-
-        .slot-frame-1win { background: linear-gradient(180deg, #580a0a 0%, #120104 100%); border: 3px solid #f59e0b; border-radius: 12px; padding: 6px; box-shadow: 0 0 25px rgba(245, 158, 11, 0.4); }
-        .reels-5-col { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: #000; padding: 4px; border-radius: 8px; border: 1px solid #7f1d1d; }
+        .slot-title-banner { text-align: center; font-size: 20px; font-weight: 900; color: #fcd34d; text-shadow: 0 0 10px #f59e0b; margin: 4px 0; }
+        .slot-frame-1win { background: linear-gradient(180deg, #580a0a 0%, #120104 100%); border: 3px solid #f59e0b; border-radius: 12px; padding: 6px; }
+        .reels-5-col { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: #000; padding: 4px; border-radius: 8px; }
         .reel-column { display: flex; flex-direction: column; gap: 4px; }
         
-        .slot-cell-1win { background: radial-gradient(circle, #2a050c 0%, #0d0104 100%); border: 1px solid #4a0a16; height: 64px; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 4px; transition: all 0.1s; }
-        .slot-cell-1win img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
-        .slot-cell-1win.win-anim { animation: winPulse 0.4s infinite alternate; border-color: #f59e0b; background: #6b0c0c; box-shadow: inset 0 0 15px #f59e0b; }
+        .slot-cell-1win { background: radial-gradient(circle, #2a050c 0%, #0d0104 100%); border: 1px solid #4a0a16; height: 64px; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 4px; }
+        .slot-cell-1win img { width: 100%; height: 100%; object-fit: contain; }
+        .slot-cell-1win.win-anim { animation: winPulse 0.4s infinite alternate; border-color: #f59e0b; background: #6b0c0c; }
         @keyframes winPulse { 0% { transform: scale(0.92); } 100% { transform: scale(1.05); } }
 
-        /* SLOT BOTTOM CONTROL PANEL */
         .slot-controls-area { background: #0d0205; border: 1px solid #3b0712; border-radius: 14px; padding: 10px; margin-top: 8px; }
         .slot-stats-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
         .stat-box { background: #18040a; border: 1px solid #7f1d1d; border-radius: 8px; flex: 1; padding: 6px; text-align: center; }
-        .stat-box .lbl { font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
+        .stat-box .lbl { font-size: 10px; color: #94a3b8; font-weight: bold; }
         .stat-box .val { font-size: 16px; font-weight: 900; color: #22c55e; }
 
-        .spin-controls-flex { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 6px; }
+        .spin-controls-flex { display: flex; justify-content: center; align-items: center; }
+        .spin-btn-round { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, #d97706 40%, #7c2d12 100%); border: 3px solid #fef08a; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; font-weight: 900; font-size: 13px; }
         
-        .spin-btn-round { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, #d97706 40%, #7c2d12 100%); border: 3px solid #fef08a; box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.8); cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; font-weight: 900; font-size: 13px; text-transform: uppercase; transition: transform 0.1s; }
-        .spin-btn-round:active { transform: scale(0.92); }
-        .spin-btn-round span { font-size: 18px; line-height: 1; }
-
         /* MINES DESIGN */
         .mines-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; aspect-ratio: 1/1; margin: 10px; }
         .mine-tile { background: #1a080e; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 1px solid #3b0712; cursor: pointer; color: #475569; }
         .mine-tile.star { background: #1d4ed8; border-color: #60a5fa; }
         .mine-tile.bomb { background: #b91c1c; border-color: #fca5a5; }
 
-        /* WHEEL MODAL DESIGN */
+        /* WHEEL DESIGN */
         .wheel-box { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
         .wheel-container { position: relative; width: 280px; height: 280px; margin-bottom: 20px; }
         .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid #ef4444; z-index: 10; }
@@ -99,11 +97,11 @@
 
     <!-- GİRİŞ MODALI -->
     <div id="loginModal">
-        <form class="login-box" onsubmit="event.preventDefault(); verifyPin();">
+        <form class="login-box" onsubmit="handleLoginSubmit(event)">
             <div class="login-title">KRAL GAMES</div>
             <div class="login-sub">Daxil olmaq üçün 6 rəqəmli PIN yazın</div>
-            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******" required>
-            <button type="submit" class="pin-btn">GİRİŞ ET</button>
+            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******" required autocomplete="off">
+            <button type="submit" id="loginBtn" class="pin-btn">GİRİŞ ET</button>
         </form>
     </div>
 
@@ -152,7 +150,7 @@
         </div>
     </div>
 
-    <!-- 1WIN CASINO MEYVƏ OYUNU MODAL -->
+    <!-- MEYVƏ OYUNU MODAL -->
     <div id="fruitModal" class="game-modal">
         <div class="modal-top">
             <button class="back-btn" onclick="closeGame('fruitModal')">❮ Geri</button>
@@ -234,8 +232,7 @@
 
                 <div class="spin-controls-flex">
                     <button class="spin-btn-round" onclick="spinSlot()">
-                        <span>↻</span>
-                        START
+                        <span>↻</span>START
                     </button>
                 </div>
             </div>
@@ -259,6 +256,15 @@
     </div>
 
     <script>
+        // FIREBASE İNİTİALİZASİYASI
+        const firebaseConfig = {
+            databaseURL: "https://kralgames-default-rtdb.firebaseio.com"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
         let balance = 0;
         let currentPin = null;
         let jackpotVal = 145.20;
@@ -272,35 +278,113 @@
             'https://cdn-icons-png.flaticon.com/512/1998/1998614.png',
             'https://cdn-icons-png.flaticon.com/512/1728/1728723.png'
         ];
-
         const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
 
-        function getUsersDB() { 
-            try {
-                return JSON.parse(localStorage.getItem('kral_users_db')) || {};
-            } catch (e) {
-                return {};
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const pinInput = document.getElementById('pinInput');
+            const pin = pinInput.value.trim();
+
+            if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
+
+            btn.disabled = true;
+            btn.innerText = "YOXLAMIR...";
+
+            // Firebase ilə PIN yoxlama
+            database.ref('users/' + pin).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        currentPin = pin;
+                        balance = parseFloat(userData.balance || 0);
+
+                        syncBalance();
+                        document.getElementById('loginModal').style.display = 'none';
+                        document.getElementById('appContent')
+                            <script>
+        // FIREBASE İNİTİALİZASİYASI
+        const firebaseConfig = {
+            databaseURL: "https://kralgames-default-rtdb.firebaseio.com"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        let balance = 0;
+        let currentPin = null;
+        let jackpotVal = 145.20;
+
+        const slotImages = [
+            'https://cdn-icons-png.flaticon.com/512/3137/3137044.png',
+            'https://cdn-icons-png.flaticon.com/512/236/236822.png',
+            'https://cdn-icons-png.flaticon.com/512/7210/7210826.png',
+            'https://cdn-icons-png.flaticon.com/512/1135/1135528.png',
+            'https://cdn-icons-png.flaticon.com/512/6866/6866538.png',
+            'https://cdn-icons-png.flaticon.com/512/1998/1998614.png',
+            'https://cdn-icons-png.flaticon.com/512/1728/1728723.png'
+        ];
+        const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const pinInput = document.getElementById('pinInput');
+            const pin = pinInput.value.trim();
+
+            if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
+
+            btn.disabled = true;
+            btn.innerText = "YOXLAMIR...";
+
+            // Firebase ilə PIN yoxlama
+            database.ref('users/' + pin).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        currentPin = pin;
+                        balance = parseFloat(userData.balance || 0);
+
+                        syncBalance();
+                        document.getElementById('loginModal').style.display = 'none';
+                        document.getElementById('appContent').style.display = 'block';
+                        drawWheel();
+                        checkWheelStatus();
+                    } else {
+                        alert('Daxil edilən PIN kod tapılmadı!');
+                    }
+                })
+                .catch((err) => {
+                    alert('Şəbəkə xətası! Firebase bağlantısını yoxlayın.');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = "GİRİŞ ET";
+                });
+        }
+
+        function syncBalance() {
+            document.getElementById('mainBalanceDisplay').innerText = balance.toFixed(2);
+            document.querySelectorAll('.gameBal').forEach(e => e.innerText = balance.toFixed(2));
+            if (currentPin) {
+                database.ref('users/' + currentPin + '/balance').set(balance.toFixed(2));
             }
         }
 
-        function verifyPin() {
-            const pinInput = document.getElementById('pinInput');
-            if (!pinInput) return;
-            
-            const pin = pinInput.value.trim();
-            if (!pin) {
-                alert('Zəhmət olmasa 6 rəqəmli PIN kodu daxil edin!');
-                return;
-            }
+        setInterval(() => {
+            jackpotVal = (Math.random() * (500 - 50) + 50);
+            document.getElementById('jackpotDisplay').innerText = jackpotVal.toFixed(2) + " ₼";
+        }, 120);
 
-            const db = getUsersDB();
+        function openGame(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if(id==='minesModal') resetMines(); 
+            if(id==='wheelModal') checkWheelStatus();
+        }
+        function closeGame(id) { document.getElementById(id).classList.remove('active'); }
 
-            if (db && db[pin] !== undefined) {
-                currentPin = pin;
-                let userVal = db[pin];
-                
-                if (typeof userVal === 'object' && userVal !== null) {
-                          /* REAL CASINO SLOT SPIN LOGİKA */
+        /* SLOT LOGİKA */
         function spinSlot() {
             if (balance < 1) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
             balance -= 1; syncBalance();
@@ -322,20 +406,9 @@
 
                 if (ticks > 14) {
                     clearInterval(interval);
-                    
-                    const jackChance = parseFloat(localStorage.getItem('kral_jackpot_chance')) || 5; 
-                    const fruitChance = parseFloat(localStorage.getItem('kral_fruit_chance')) || 30;
-
-                    if ((Math.random() * 100) <= jackChance) {
-                        const winJack = jackpotVal;
-                        balance += winJack; syncBalance();
-                        document.getElementById('slotWinDisplay').innerText = winJack.toFixed(2) + ' ₼';
-                        alert(`🎉 TEBRİKLƏR! GRAND JACKPOT QAZANDINIZ: ${winJack.toFixed(2)} ₼!`);
-                    } 
-                    else if ((Math.random() * 100) <= fruitChance) {
+                    if (Math.random() <= 0.3) {
                         const matchedIdx = Math.floor(Math.random() * slotImages.length);
                         const matchedImgHtml = `<img src="${slotImages[matchedIdx]}">`;
-                        
                         cells[1].innerHTML = matchedImgHtml;
                         cells[4].innerHTML = matchedImgHtml;
                         cells[7].innerHTML = matchedImgHtml;
@@ -371,14 +444,12 @@
                 activeMines = true;
                 document.getElementById('minesBtn').innerText = 'QAZANCI GÖTÜR';
                 
-                const mineChance = (parseFloat(localStorage.getItem('kral_mines_chance')) || 20) / 100;
                 let tiles = document.querySelectorAll('.mine-tile');
-                
                 tiles.forEach((t) => {
                     t.innerText = '';
                     t.onclick = () => {
                         if(!activeMines) return;
-                        if(Math.random() < mineChance) {
+                        if(Math.random() < 0.2) {
                             t.classList.add('bomb'); t.innerText = '💣';
                             alert('Bomba patladı!'); activeMines = false;
                             resetMines();
@@ -395,22 +466,17 @@
 
         /* ÇARX LOGİKA */
         function getWheelSectors() {
-            const wBomb = parseFloat(localStorage.getItem('kral_wheel_bomb')) || 60;
-            const w5 = parseFloat(localStorage.getItem('kral_wheel_5')) || 45;
-            const w20 = parseFloat(localStorage.getItem('kral_wheel_20')) || 30;
-            const w100 = parseFloat(localStorage.getItem('kral_wheel_100')) || 1;
-
             return [
-                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
-                { label: '5 ₼', type: 'win', win: 5, weight: w5 },
-                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
-                { label: '20 ₼', type: 'win', win: 20, weight: w20 },
-                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
-                { label: '5 ₼', type: 'win', win: 5, weight: w5 },
-                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
-                { label: '100 ₼', type: 'win', win: 100, weight: w100 },
-                { label: '💣', type: 'bomb', win: 0, weight: wBomb },
-                { label: '20 ₼', type: 'win', win: 20, weight: w20 }
+                { label: '💣', type: 'bomb', win: 0, weight: 60 },
+                { label: '5 ₼', type: 'win', win: 5, weight: 45 },
+                { label: '💣', type: 'bomb', win: 0, weight: 60 },
+                { label: '20 ₼', type: 'win', win: 20, weight: 30 },
+                { label: '💣', type: 'bomb', win: 0, weight: 60 },
+                { label: '5 ₼', type: 'win', win: 5, weight: 45 },
+                { label: '💣', type: 'bomb', win: 0, weight: 60 },
+                { label: '100 ₼', type: 'win', win: 100, weight: 1 },
+                { label: '💣', type: 'bomb', win: 0, weight: 60 },
+                { label: '20 ₼', type: 'win', win: 20, weight: 30 }
             ];
         }
 
@@ -441,28 +507,20 @@
         }
 
         function checkWheelStatus() {
-            const btn = document.getElementById('spinWheelBtn');
-            const hasSpun = localStorage.getItem('wheel_spun_' + currentPin);
-            if (hasSpun === 'true') {
-                btn.disabled = true;
-                btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
-            }
+            if (!currentPin) return;
+            database.ref('users/' + currentPin + '/wheelSpun').once('value').then(snap => {
+                if (snap.val() === true) {
+                    const btn = document.getElementById('spinWheelBtn');
+                    btn.disabled = true;
+                    btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
+                }
+            });
         }
 
         let currentRotation = 0;
         function spinWheel() {
             const btn = document.getElementById('spinWheelBtn');
-            const hasSpun = localStorage.getItem('wheel_spun_' + currentPin);
-            
-            if (hasSpun === 'true') {
-                btn.disabled = true;
-                btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
-                return alert('Şans çarxından yalnız 1 dəfə istifadə edə bilərsiniz!');
-            }
-
-            if (balance > 0) {
-                return alert('Şans çarxı yalnız balansınız tam bitdikdə (0.00 ₼) aktiv olur!');
-            }
+            if (balance > 0) return alert('Şans çarxı yalnız balans 0.00 ₼ olduqda istifadə edilə bilər!');
 
             btn.disabled = true;
 
@@ -487,7 +545,7 @@
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
-                localStorage.setItem('wheel_spun_' + currentPin, 'true');
+                database.ref('users/' + currentPin + '/wheelSpun').set(true);
                 btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
 
                 const sec = sectors[selectedIndex];
