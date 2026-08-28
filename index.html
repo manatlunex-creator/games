@@ -95,14 +95,14 @@
 </head>
 <body>
 
-    <!-- GİRİŞ MODALI -->
+    <!-- GİRİŞ MODALI (Yenilənmiş Düymə Məntiqi) -->
     <div id="loginModal">
-        <form class="login-box" onsubmit="handleLoginSubmit(event)">
+        <div class="login-box">
             <div class="login-title">KRAL GAMES</div>
             <div class="login-sub">Daxil olmaq üçün 6 rəqəmli PIN yazın</div>
-            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******" required autocomplete="off">
-            <button type="submit" id="loginBtn" class="pin-btn">GİRİŞ ET</button>
-        </form>
+            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******" autocomplete="off">
+            <button type="button" id="loginBtn" onclick="processLogin()" class="pin-btn">GİRİŞ ET</button>
+        </div>
     </div>
 
     <!-- ƏSAS İNTERFEYS -->
@@ -280,16 +280,16 @@
         ];
         const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
 
-        function handleLoginSubmit(e) {
-            e.preventDefault();
+        // GİRİŞƏ BİRBAŞA NEZARƏT EDƏN FUNKSİYA
+        function processLogin() {
             const btn = document.getElementById('loginBtn');
             const pinInput = document.getElementById('pinInput');
-            const pin = pinInput.value.trim();
+            const pin = pinInput ? pinInput.value.trim() : '';
 
             if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
 
             btn.disabled = true;
-            btn.innerText = "YOXLAMIR...";
+            btn.innerText = "YOXLANIŞ...";
 
             // Firebase ilə PIN yoxlama
             database.ref('users/' + pin).once('value')
@@ -301,7 +301,6 @@
 
                         syncBalance();
                         document.getElementById('loginModal').style.display = 'none';
-                        document.getElementById('appContent')
                             <script>
         // FIREBASE İNİTİALİZASİYASI
         const firebaseConfig = {
@@ -327,16 +326,16 @@
         ];
         const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
 
-        function handleLoginSubmit(e) {
-            e.preventDefault();
+        // GİRİŞƏ BİRBAŞA NEZARƏT EDƏN FUNKSİYA
+        function processLogin() {
             const btn = document.getElementById('loginBtn');
             const pinInput = document.getElementById('pinInput');
-            const pin = pinInput.value.trim();
+            const pin = pinInput ? pinInput.value.trim() : '';
 
             if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
 
             btn.disabled = true;
-            btn.innerText = "YOXLAMIR...";
+            btn.innerText = "YOXLANIŞ...";
 
             // Firebase ilə PIN yoxlama
             database.ref('users/' + pin).once('value')
@@ -560,3 +559,5 @@
     </script>
 </body>
 </html>
+
+                        
