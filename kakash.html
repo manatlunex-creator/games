@@ -11,23 +11,23 @@
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { background: #0d0d11; color: #fff; padding: 15px; display: flex; justify-content: center; }
-    .admin-card { width: 100%; max-width: 500px; background: #16161e; border: 2px solid #ff2a2a; border-radius: 15px; padding: 20px; box-shadow: 0 0 20px rgba(255, 42, 42, 0.3); }
-    h2, h3 { color: #f1c40f; text-align: center; margin-bottom: 15px; }
+    body { background: #0c0b10; color: #fff; padding: 15px; display: flex; justify-content: center; }
+    .admin-card { width: 100%; max-width: 480px; background: #15131d; border: 2px solid #ff3b30; border-radius: 15px; padding: 20px; box-shadow: 0 0 20px rgba(255, 59, 48, 0.3); }
+    h2, h3 { color: #ffd700; text-align: center; margin-bottom: 15px; font-size: 18px; }
     
     /* Login */
     #login-box { display: block; text-align: center; }
-    input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ff4444; background: #09090d; color: #fff; font-size: 15px; text-align: center; }
-    .btn { width: 90%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(45deg, #ff2a2a, #ff7676); color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #443c59; background: #09080d; color: #fff; font-size: 15px; text-align: center; outline: none; }
+    .btn { width: 90%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #ff3b30, #c81912); color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
     
     /* Panel */
     #panel-box { display: none; }
-    .section { background: #0a0a0f; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-    .section h4 { color: #2ecc71; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-    .btn-green { background: linear-gradient(45deg, #2ecc71, #27ae60); }
-    .btn-red { background: linear-gradient(45deg, #e74c3c, #c0392b); }
-    .btn-sm { width: 48%; display: inline-block; padding: 10px; font-size: 13px; }
-    .list-item { display: flex; justify-content: space-between; align-items: center; background: #1a1a24; padding: 8px 12px; border-radius: 6px; margin-top: 5px; }
+    .section { background: #09080d; border: 1px solid #2a243d; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+    .section h4 { color: #2ecc71; margin-bottom: 10px; border-bottom: 1px solid #1f1b2e; padding-bottom: 5px; font-size: 14px; }
+    .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .btn-red { background: linear-gradient(135deg, #ff3b30, #c81912); }
+    .btn-sm { width: 48%; display: inline-block; padding: 10px; font-size: 13px; margin-top: 5px; }
+    .list-item { display: flex; justify-content: space-between; align-items: center; background: #1f1b2e; padding: 10px; border-radius: 6px; margin-top: 6px; font-size: 13px; border: 1px solid #332d4a; }
   </style>
 </head>
 <body>
@@ -40,24 +40,24 @@
       <input type="text" id="adminUser" placeholder="İstifadəçi Adı">
       <input type="password" id="adminPass" placeholder="Şifrə">
       <button class="btn" onclick="loginAdmin()">PANELƏ GİRİŞ</button>
-      <div id="login-err" style="color:red; margin-top:10px; font-weight:bold;"></div>
+      <div id="login-err" style="color:#ff3b30; margin-top:10px; font-weight:bold; font-size:13px;"></div>
     </div>
 
-    <!-- İDARƏ PANENİ -->
+    <!-- İDARƏ PANELİ -->
     <div id="panel-box">
       
-      <!-- 1. PIN & Giriş Kodları İdarəsi -->
+      <!-- 1. PIN & Canlı Balans İdarəsi -->
       <div class="section">
-        <h4>🔑 PIN Giriş Kodları</h4>
+        <h4>🔑 PIN Kodlar və Canlı Balans</h4>
         <input type="text" id="newPin" placeholder="Yeni PIN (məs: 2110)">
         <button class="btn btn-green" onclick="addPin()">PIN KODU ƏLAVƏ ET</button>
-        <div id="pinList" style="margin-top: 10px;"></div>
+        <div id="pinList" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
       </div>
 
-      <!-- 2. Balans İdarəsi -->
+      <!-- 2. Balans Artırmaq / Silmək -->
       <div class="section">
-        <h4>💰 Balans Artırmaq / Silmək</h4>
-        <input type="text" id="targetPin" placeholder="PIN Kodu (İstifadəçi)">
+        <h4>💰 Balans Əlavə Et / Çıxar</h4>
+        <input type="text" id="targetPin" placeholder="PIN Kodu daxil et">
         <input type="number" id="balanceAmt" placeholder="Məbləğ (AZN)">
         <div style="display: flex; justify-content: space-between;">
           <button class="btn btn-green btn-sm" onclick="updateUserBal(true)">BALANS ARTIR</button>
@@ -67,12 +67,10 @@
 
       <!-- 3. Oyunda Şans və Jackpot Ayarları -->
       <div class="section">
-        <h4>🎰 Oyunda Şanslar və Jackpot</h4>
-        <label style="font-size: 12px; color: #aaa;">Uduş Şansı (0% - 100%):</label>
-        <input type="number" id="winRate" placeholder="Nüm: 30" min="0" max="100">
-        <label style="font-size: 12px; color: #aaa;">Cari Jackpot (AZN):</label>
-        <input type="number" id="jackpotInput" placeholder="Nüm: 350">
-        <button class="btn" onclick="saveGameSettings()">AYARLARI YADDA SAXLA</button>
+        <h4>🎰 Oyun Ayarları və Jackpot</h4>
+        <label style="font-size: 11px; color: #aaa; display:block; text-align:left;">Cari Jackpot (AZN):</label>
+        <input type="number" id="jackpotInput" placeholder="Nüm: 250">
+        <button class="btn" onclick="saveGameSettings()">YADDA SAXLA</button>
       </div>
 
       <button class="btn btn-red" onclick="location.reload()" style="width: 100%;">ÇIXIŞ ET</button>
@@ -118,13 +116,11 @@
         active: true,
         balance: 0.00
       }).then(() => {
-        alert("PIN " + pin + " yaradıldı!");
         document.getElementById("newPin").value = "";
-        loadPins();
       });
     }
 
-    // PIN Siyahısını Yükləmək və Silmək
+    // PIN Siyahısı və Canlı Balans Dinləyicisi (on value)
     function loadPins() {
       db.ref("pins").on("value", (snapshot) => {
         const list = document.getElementById("pinList");
@@ -132,11 +128,11 @@
         snapshot.forEach((child) => {
           const p = child.key;
           const val = child.val();
-          const bal = val.balance ? val.balance : 0;
+          const bal = val.balance !== undefined ? parseFloat(val.balance).toFixed(2) : "0.00";
           list.innerHTML += `
             <div class="list-item">
-              <span>📌 <b>${p}</b> (Balans: ${bal} AZN)</span>
-              <button style="background:red; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="deletePin('${p}')">SİL</button>
+              <span>📌 <b>${p}</b> | Balans: <b style="color:#2ecc71;">${bal} AZN</b></span>
+              <button style="background:#ff3b30; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="deletePin('${p}')">SİL</button>
             </div>
           `;
         });
@@ -164,27 +160,24 @@
         if(newBal < 0) newBal = 0;
 
         db.ref("pins/" + pin + "/balance").set(newBal).then(() => {
-          alert("Balans yeniləndi! Yeni Balans: " + newBal + " AZN");
+          document.getElementById("targetPin").value = "";
+          document.getElementById("balanceAmt").value = "";
         });
       });
     }
 
-    // 4. Şans və Jackpot Ayarları
+    // 4. Jackpot Ayarları
     function saveGameSettings() {
-      const rate = document.getElementById("winRate").value;
       const jackpot = document.getElementById("jackpotInput").value;
-
       db.ref("settings").update({
-        winRate: rate ? parseInt(rate) : 30,
         jackpot: jackpot ? parseFloat(jackpot) : 250
-      }).then(() => alert("Oyun şansı və Jackpot yadda saxlanıldı!"));
+      }).then(() => alert("Jackpot yadda saxlanıldı!"));
     }
 
     function loadSettings() {
       db.ref("settings").once("value").then((snapshot) => {
         if(snapshot.exists()) {
           const data = snapshot.val();
-          if(data.winRate) document.getElementById("winRate").value = data.winRate;
           if(data.jackpot) document.getElementById("jackpotInput").value = data.jackpot;
         }
       });
