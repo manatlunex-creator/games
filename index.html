@@ -1,445 +1,109 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Kral Games</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { background: #07060b; color: #fff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-    
-    /* Ekranlar */
-    .screen { display: none; width: 100%; max-width: 480px; flex-direction: column; min-height: 100vh; padding-bottom: 70px; }
-    .screen.active { display: flex; }
-
-    /* PIN Giriş Ekranı */
-    #pin-screen { justify-content: center; align-items: center; padding: 20px; }
-    .pin-box { background: #141120; border: 1px solid #292442; border-radius: 16px; padding: 25px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-    .pin-box h2 { color: #ffd700; margin-bottom: 15px; font-size: 22px; }
-    .pin-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #363052; background: #07060b; color: #fff; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none; letter-spacing: 2px; }
-    
-    /* Ümumi Düymələr */
-    .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(180deg, #ffd700 0%, #ff9900 100%); color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
-    .btn:active { transform: scale(0.98); }
-
-    /* Header */
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #100d1a; border-bottom: 1px solid #231f3d; }
-    .balance-badge { background: #1a162b; border: 1px solid #362f59; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #2ecc71; font-size: 15px; }
-
-    /* Oyun Panelləri */
-    .game-panel { display: none; flex-direction: column; padding: 15px; flex: 1; }
-    .game-panel.active { display: flex; }
-
-    /* Slot Stili */
-    .slot-container { background: #141120; border: 2px solid #ffd700; border-radius: 14px; padding: 15px; text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255,215,0,0.2); }
-    .slot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; background: #07060b; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-    .slot-col { display: flex; flex-direction: column; gap: 6px; }
-    .slot-icon { background: #1c182d; border-radius: 6px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid #2d2647; }
-    .winning-line { border-color: #2ecc71 !important; background: rgba(46, 204, 113, 0.2) !important; }
-
-    /* Mines Grid */
-    .mines-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-    .mine-card { background: #1c182d; border: 1px solid #363052; border-radius: 10px; height: 75px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; transition: 0.2s; }
-    .mine-card.open { background: #221d38; border-color: #3498db; }
-    .mine-card.boom { background: #ff3b30; border-color: #ff3b30; }
-
-    /* Wheel Canvas */
-    .wheel-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-    canvas { border-radius: 50%; box-shadow: 0 0 20px rgba(255,215,0,0.3); margin-bottom: 20px; }
-
-    /* Bottom Nav */
-    .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #100d1a; border-top: 1px solid #231f3d; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
-    .nav-item { background: none; border: none; color: #8a85a3; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-    .nav-item.active { color: #ffd700; }
-    .nav-item span { font-size: 18px; }
-
-    /* Msg */
-    .msg { margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; min-height: 20px; }
-    
-    /* Inputs */
-    .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #363052; background: #07060b; color: #fff; font-size: 15px; margin-bottom: 10px; outline: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kral Games - Casino Slot</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0f172a; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .container { width: 100%; max-width: 480px; padding: 20px; text-align: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .balance-box { font-size: 18px; font-weight: bold; color: #facc15; }
+        .slot-machine { background: #1e293b; border: 4px solid #eab308; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(234, 179, 8, 0.2); margin-bottom: 20px; }
+        .screen { display: flex; justify-content: center; gap: 10px; background: #090d16; padding: 15px; border-radius: 8px; border: 2px inset #334155; margin-bottom: 20px; font-size: 40px; }
+        .reel { background: #111827; width: 70px; height: 90px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #374151; }
+        .controls { display: flex; flex-direction: column; gap: 10px; }
+        .bet-box { display: flex; justify-content: space-between; align-items: center; background: #334155; padding: 10px 15px; border-radius: 8px; }
+        .bet-box input { background: #0f172a; border: 1px solid #475569; color: #fff; padding: 8px; width: 100px; text-align: center; border-radius: 6px; font-size: 16px; }
+        .spin-btn { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); transition: 0.2s; }
+        .spin-btn:active { transform: scale(0.96); }
+        .back-btn { background: #334155; color: #cbd5e1; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-  <div id="pin-screen" class="screen active">
-    <div class="pin-box">
-      <h2>👑 KRAL GAMES 👑</h2>
-      <p style="color:#aaa; font-size:13px; margin-bottom:15px;">Daxil olmaq üçün PIN kodunuzu yazın</p>
-      <input type="text" id="pinInput" class="pin-input" placeholder="Məs: 7777">
-      <button class="btn" onclick="loginWithPin()">DAXİL OL</button>
-      <div class="msg" id="login-msg" style="color:#ff3b30;"></div>
-    </div>
-  </div>
-
-  <div id="game-screen" class="screen">
-    <div class="header">
-      <span style="font-weight:bold; color:#ffd700;">👑 Kral Games</span>
-      <div class="balance-badge"><span id="user-balance">0.00</span> AZN</div>
-    </div>
-
-    <div id="lobby-menu" class="game-panel active">
-      <h3 style="margin-bottom: 15px; color:#ffd700;">Oyunlar</h3>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button class="btn" onclick="openGame('slot')">🎰 Fruit Slot</button>
-        <button class="btn" onclick="openGame('mines')">💣 Mines (Minalar)</button>
-        <button class="btn" onclick="openGame('wheel')" style="background: linear-gradient(180deg, #3498db 0%, #2980b9 100%); color:#fff;">🎡 Çarx (Xoşbəxtlik Çarxı)</button>
-      </div>
-    </div>
-
-    <div id="slot-panel" class="game-panel">
-      <button onclick="closeGame()" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer; text-align:left; margin-bottom:10px;">← Geri</button>
-      <div class="slot-container">
-        <h3 style="color:#ffd700; margin-bottom:10px;">Fruit Slot</h3>
-        <div class="slot-grid" id="slotGrid">
-          <div class="slot-col" id="col1"><div class="slot-icon">🍉</div><div class="slot-icon">🍒</div><div class="slot-icon">🍊</div></div>
-          <div class="slot-col" id="col2"><div class="slot-icon">🍇</div><div class="slot-icon">🍋</div><div class="slot-icon">🍉</div></div>
-          <div class="slot-col" id="col3"><div class="slot-icon">7️⃣</div><div class="slot-icon">🍇</div><div class="slot-icon">🍊</div></div>
-          <div class="slot-col" id="col4"><div class="slot-icon">🍊</div><div class="slot-icon">🍋</div><div class="slot-icon">🍇</div></div>
-          <div class="slot-col" id="col5"><div class="slot-icon">🍉</div><div class="slot-icon">🍒</div><div class="slot-icon">7️⃣</div></div>
+    <div class="container">
+        <div class="header">
+            <h2>👑 Kral Slot</h2>
+            <div class="balance-box">Balans: <span id="balance">1000</span> ₼</div>
         </div>
-        <input type="number" id="slotBet" class="input-field" value="1" min="0.1" step="0.5" placeholder="Mərc məbləği">
-        <button class="btn" onclick="spinSlot()">FIRLAT</button>
-        <div class="msg" id="fruit-res"></div>
-      </div>
+
+        <div class="slot-machine">
+            <div class="screen">
+                <div class="reel" id="reel1">🍒</div>
+                <div class="reel" id="reel2">🍋</div>
+                <div class="reel" id="reel3">🔔</div>
+            </div>
+
+            <div class="controls">
+                <div class="bet-box">
+                    <label>Mərc məbləği:</label>
+                    <input type="number" id="betAmount" value="10" min="1">
+                </div>
+                <button class="spin-btn" onclick="spinWheel()">Fırlat (SPIN)</button>
+            </div>
+        </div>
+
+        <button class="back-btn" onclick="window.location.href='../index.html'">Lobyə qayıt</button>
     </div>
 
-    <div id="mines-panel" class="game-panel">
-      <button onclick="closeGame()" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer; text-align:left; margin-bottom:10px;">← Geri</button>
-      <div class="slot-container">
-        <h3 style="color:#ffd700; margin-bottom:10px;">Mines (Əmsal: <span id="mine-mult" style="color:#2ecc71;">1.00</span>x)</h3>
-        <div class="mines-grid" id="minesGrid"></div>
-        <input type="number" id="minesBet" class="input-field" value="1" min="0.1" step="0.5">
-        <button class="btn" id="minesStartBtn" onclick="startMines()">OYUNA BAŞLA</button>
-        <button class="btn" id="minesCashoutBtn" onclick="cashoutMines()" style="display:none; background: #2ecc71; color:#000;">PULUNU GÖTÜR (CASHOUT)</button>
-        <div class="msg" id="mines-res"></div>
-      </div>
-    </div>
+    <script>
+        // Simvollar siyahısı
+        const symbols = ['🍒', '🍋', '🔔', '⭐', '💎', '7️⃣'];
+        let balance = 1000; // Firebase-dən gələn balansla əvəz olunacaq
 
-    <div id="wheel-panel" class="game-panel">
-      <button onclick="closeGame()" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer; text-align:left; margin-bottom:10px;">← Geri</button>
-      <div class="wheel-box">
-        <h3 style="color:#ffd700; margin-bottom:10px;">Xoşbəxtlik Çarxı</h3>
-        <p id="wheelStatusMsg" style="font-size:13px; color:#aaa; margin-bottom:15px;"></p>
-        <canvas id="wheelCanvas" width="260" height="260"></canvas>
-        <button class="btn" id="wheelSpinBtn" onclick="spinWheel()" style="display:none;">PULSUZ ÇARXI FIRLAT</button>
-        <div class="msg" id="wheel-res"></div>
-      </div>
-    </div>
-
-    <div class="nav-bar">
-      <button class="nav-item active" onclick="closeGame()"><span>🏠</span>Loby</button>
-      <button class="nav-item" onclick="openWithdrawModal()"><span>💳</span>Çıxarış</button>
-    </div>
-  </div>
-
-  <div id="withdrawModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:200; padding:20px;">
-    <div style="background:#141120; border:1px solid #292442; border-radius:16px; padding:20px; width:100%; max-width:350px;">
-      <h3 style="color:#ffd700; margin-bottom:15px; text-align:center;">Pul Çıxarışı</h3>
-      <input type="number" id="withdrawAmount" class="input-field" placeholder="Məbləğ (AZN)">
-      <input type="text" id="withdrawCard" class="input-field" placeholder="Kart nömrəsi və ya İBAN">
-      <button class="btn" onclick="submitWithdraw()">TƏSDİQ ET</button>
-      <button onclick="closeWithdrawModal()" style="width:100%; margin-top:10px; background:none; border:none; color:#aaa; cursor:pointer;">Bağla</button>
-      <div class="msg" id="withdraw-res"></div>
-    </div>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
-      authDomain: "game-44f1a.firebaseapp.com",
-      databaseURL: "https://game-44f1a-default-rtdb.firebaseio.com",
-      projectId: "game-44f1a"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let currentPin = null;
-    let balance = 0;
-    let wheelUsed = false;
-    let winChance = 35; // Admin panelden idarə olunan uduş şansı
-
-    // Admin tərəfindən qoyulan uduş şansını canlı dinlə
-    db.ref("settings/winChance").on("value", snap => {
-      if(snap.exists()) winChance = snap.val();
-    });
-
-    // PIN ilə daxil olma
-    function loginWithPin() {
-      const pin = document.getElementById("pinInput").value.trim();
-      const msg = document.getElementById("login-msg");
-      if(!pin) { msg.innerText = "Zəhmət olmasa PIN daxil edin!"; return; }
-
-      db.ref("pins/" + pin).once("value").then(snap => {
-        if(snap.exists()) {
-          currentPin = pin;
-          const data = snap.val();
-          balance = data.balance || 0;
-          wheelUsed = data.wheelUsed || false;
-
-          document.getElementById("pin-screen").classList.remove("active");
-          document.getElementById("game-screen").classList.add("active");
-          
-          // Balansı və çarxı real vaxtda izlə
-          listenToUserBalance();
-        } else {
-          msg.innerText = "Yanlış PIN kod!";
-        }
-      });
-    }
-
-    // Real-time balans izləmə
-    function listenToUserBalance() {
-      db.ref("pins/" + currentPin).on("value", snap => {
-        if(snap.exists()) {
-          const data = snap.val();
-          balance = data.balance;
-          wheelUsed = data.wheelUsed || false;
-          document.getElementById("user-balance").innerText = balance.toFixed(2);
-          if(balance <= 0 && !wheelUsed) {
-            openGame('wheel');
-          }
-        }
-      });
-    }
-
-    function updateBal() {
-      if(currentPin) {
-        db.ref("pins/" + currentPin).update({
-          balance: balance,
-          wheelUsed: wheelUsed
-        });
-      }
-      document.getElementById("user-balance").innerText = balance.toFixed(2);
-    }
-
-    // Oyun dəyişmə
-    function openGame(name) {
-      document.getElementById("lobby-menu").classList.remove("active");
-      document.querySelectorAll(".game-panel").forEach(p => p.classList.remove("active"));
-      
-      if(name === 'slot') document.getElementById("slot-panel").classList.add("active");
-      if(name === 'mines') { document.getElementById("mines-panel").classList.add("active"); initMinesGrid(); }
-      if(name === 'wheel') { document.getElementById("wheel-panel").classList.add("active"); drawWheel(); checkWheelState(); }
-    }
-
-    function closeGame() {
-      document.querySelectorAll(".game-panel").forEach(p => p.classList.remove("active"));
-      document.getElementById("lobby-menu").classList.add("active");
-    }
-
-    // Slot Oyunu Məntiqi
-    const fruitIcons = ['🍉', '🍒', '🍊', '🍇', '🍋', '7️⃣'];
-    function spinSlot() {
-      const bet = parseFloat(document.getElementById("slotBet").value);
-      const res = document.getElementById("fruit-res");
-      if(balance <= 0) { openGame('wheel'); return; }
-      if(isNaN(bet) || bet <= 0 || bet > balance) { res.style.color="red"; res.innerText="Balans kifayət etmir!"; return; }
-
-      balance -= bet; updateBal();
-      res.style.color = "#fff"; res.innerText = "Fırlanır...";
-
-      document.querySelectorAll('.slot-icon').forEach(el => el.classList.remove('winning-line'));
-
-      let counter = 0;
-      const interval = setInterval(() => {
-        for(let c=1; c<=5; c++) {
-          document.getElementById('col'+c).innerHTML = `
-            <div class="slot-icon">${fruitIcons[Math.floor(Math.random()*fruitIcons.length)]}</div>
-            <div class="slot-icon">${fruitIcons[Math.floor(Math.random()*fruitIcons.length)]}</div>
-            <div class="slot-icon">${fruitIcons[Math.floor(Math.random()*fruitIcons.length)]}</div>
-          `;
-        }
-        counter++;
-        if(counter > 10) {
-          clearInterval(interval);
-          const isWin = (Math.random() * 100) < winChance;
-          const win = isWin ? bet * (Math.random() < 0.2 ? 10 : 3) : 0;
-
-          if(win > 0) {
-            balance += win; updateBal();
-            res.style.color = "#2ecc71"; res.innerText = `🎉 UDUŞ! +${win.toFixed(2)} AZN`;
-            for(let c=1; c<=5; c++) {
-              const colEl = document.getElementById('col'+c);
-              if(colEl.children[1]) colEl.children[1].classList.add('winning-line');
+        function spinWheel() {
+            const bet = parseInt(document.getElementById('betAmount').value);
+            
+            if (isNaN(bet) || bet <= 0) {
+                alert("Düzgün mərc daxil edin!");
+                return;
             }
-          } else {
-            res.style.color = "#ff3b30"; res.innerText = "Uduzduz!";
-          }
+
+            if (balance < bet) {
+                alert("Balansınız kifayət etmir!");
+                return;
+            }
+
+            // Mərc çıxılır
+            balance -= bet;
+            updateBalance();
+
+            // Vizual fırlanma effekti
+            const r1 = document.getElementById('reel1');
+            const r2 = document.getElementById('reel2');
+            const r3 = document.getElementById('reel3');
+
+            r1.innerHTML = '🔄';
+            r2.innerHTML = '🔄';
+            r3.innerHTML = '🔄';
+
+            setTimeout(() => {
+                // Təsadüfi nəticə
+                const res1 = symbols[Math.floor(Math.random() * symbols.length)];
+                const res2 = symbols[Math.floor(Math.random() * symbols.length)];
+                const res3 = symbols[Math.floor(Math.random() * symbols.length)];
+
+                r1.innerHTML = res1;
+                r2.innerHTML = res2;
+                r3.innerHTML = res3;
+
+                // Qazanc yoxlanışı (Üçü də eyni olsa mərcin 5 qatı)
+                if (res1 === res2 && res2 === res3) {
+                    const win = bet * 5;
+                    balance += win;
+                    alert(`Təbriklər, qazandın! +${win} ₼`);
+                }
+
+                updateBalance();
+                // BURADA FIREBASE-E YENİ BALANSI YAZA BİLƏRSƏN
+            }, 600);
         }
-      }, 70);
-    }
 
-    /* Mines Logikası */
-    let mineLocations = [], minesActive = false, mineBet = 0, openedCount = 0;
-    function initMinesGrid() {
-      const grid = document.getElementById("minesGrid");
-      grid.innerHTML = "";
-      for(let i=0; i<9; i++) {
-        const card = document.createElement("div");
-        card.className = "mine-card";
-        card.onclick = () => clickMine(i);
-        grid.appendChild(card);
-      }
-    }
-
-    function startMines() {
-      const bet = parseFloat(document.getElementById("minesBet").value);
-      const res = document.getElementById("mines-res");
-      if(balance <= 0) { openGame('wheel'); return; }
-      if(isNaN(bet) || bet <= 0 || bet > balance) { res.style.color="red"; res.innerText="Balans çatmır!"; return; }
-
-      balance -= bet; mineBet = bet; updateBal();
-      minesActive = true; openedCount = 0;
-      document.getElementById("mine-mult").innerText = "1.00";
-      res.innerText = "";
-
-      mineLocations = [];
-      while(mineLocations.length < 2) {
-        let r = Math.floor(Math.random() * 9);
-        if(!mineLocations.includes(r)) mineLocations.push(r);
-      }
-
-      initMinesGrid();
-      document.getElementById("minesStartBtn").style.display = "none";
-      document.getElementById("minesCashoutBtn").style.display = "block";
-    }
-
-    function clickMine(idx) {
-      if(!minesActive) return;
-      const cards = document.querySelectorAll(".mine-card");
-      const card = cards[idx];
-      if(card.classList.contains("open")) return;
-
-      if(mineLocations.includes(idx)) {
-        card.classList.add("boom"); card.innerText = "💣";
-        minesActive = false;
-        document.getElementById("mines-res").style.color = "#ff3b30";
-        document.getElementById("mines-res").innerText = "💥 BOMBAYA DÜŞDÜNÜZ!";
-        document.getElementById("minesStartBtn").style.display = "block";
-        document.getElementById("minesCashoutBtn").style.display = "none";
-      } else {
-        card.classList.add("open"); card.innerText = "💎";
-        openedCount++;
-        const mult = (1 + openedCount * 0.5).toFixed(2);
-        document.getElementById("mine-mult").innerText = mult;
-      }
-    }
-
-    function cashoutMines() {
-      if(!minesActive || openedCount === 0) return;
-      const mult = parseFloat(document.getElementById("mine-mult").innerText);
-      const win = mineBet * mult;
-      balance += win; updateBal();
-      minesActive = false;
-      document.getElementById("mines-res").style.color = "#2ecc71";
-      document.getElementById("mines-res").innerText = `💰 CASHOUT: +${win.toFixed(2)} AZN`;
-      document.getElementById("minesStartBtn").style.display = "block";
-      document.getElementById("minesCashoutBtn").style.display = "none";
-    }
-
-    /* Çarx Logikası */
-    const wheelSectors = [
-      {text: "20 AZN", val: 20, color: "#ffd700"},
-      {text: "Bomba", val: 0, color: "#ff3b30"},
-      {text: "2 AZN", val: 2, color: "#2ecc71"},
-      {text: "Bomba", val: 0, color: "#cc2222"},
-      {text: "5 AZN", val: 5, color: "#3498db"},
-      {text: "Bomba", val: 0, color: "#ff3b30"}
-    ];
-    const canvas = document.getElementById("wheelCanvas");
-    const ctx = canvas.getContext("2d");
-    const arc = Math.PI * 2 / wheelSectors.length;
-
-    function drawWheel() {
-      ctx.clearRect(0, 0, 260, 260);
-      for(let i=0; i<wheelSectors.length; i++) {
-        const angle = i * arc;
-        ctx.beginPath();
-        ctx.fillStyle = wheelSectors[i].color;
-        ctx.moveTo(130, 130);
-        ctx.arc(130, 130, 120, angle, angle + arc, false);
-        ctx.lineTo(130, 130);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.save();
-        ctx.translate(130, 130);
-        ctx.rotate(angle + arc / 2);
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 11px Tahoma";
-        ctx.fillText(wheelSectors[i].text, 55, 5);
-        ctx.restore();
-      }
-    }
-
-    function checkWheelState() {
-      const spinBtn = document.getElementById("wheelSpinBtn");
-      const statusMsg = document.getElementById("wheelStatusMsg");
-      if(wheelUsed) {
-        spinBtn.style.display = "none";
-        statusMsg.innerText = "Çarx şansınız artıq istifadə olunub!";
-      } else if(balance > 0) {
-        spinBtn.style.display = "none";
-        statusMsg.innerText = "Çarx yalnız balans 0 olanda aktivləşir!";
-      } else {
-        spinBtn.style.display = "block";
-        statusMsg.innerText = "Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!";
-      }
-    }
-
-    let startAngle = 0;
-    function spinWheel() {
-      if(wheelUsed || balance > 0) return;
-      wheelUsed = true;
-      document.getElementById("wheelSpinBtn").style.display = "none";
-
-      let winningIndex = Math.random() < 0.5 ? 0 : 2; // Qazanma ehtimalı
-      const spins = 5;
-      const degrees = spins * 360 + (wheelSectors.length - winningIndex) * (360 / wheelSectors.length) - 30;
-      startAngle += degrees;
-      
-      canvas.style.transition = "transform 4s cubic-bezier(0.15, 0.85, 0.12, 0.99)";
-      canvas.style.transform = `rotate(${startAngle}deg)`;
-
-      setTimeout(() => {
-        const prize = wheelSectors[winningIndex];
-        const res = document.getElementById("wheel-res");
-        
-        if(prize.val > 0) {
-          balance += prize.val; 
-          updateBal(); 
-          res.style.color = "#2ecc71";
-          res.innerText = `🎁 ÇARXDAN QAZANDINIZ: +${prize.val} AZN!`;
-        } else {
-          res.style.color = "#ff3b30";
-           
-          res.innerText = "💥 Təəssüf";
+        function updateBalance() {
+            document.getElementById('balance').innerText = balance;
         }
-        document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız bitdi.";
-        updateBal();
-      }, 4000);
-    }
-
-    // Çıxarış Modal
-    function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
-    function closeWithdrawModal() { document.getElementById("withdrawModal").style.display = "none"; }
-    function submitWithdraw() {
-      const amt = parseFloat(document.getElementById("withdrawAmount").value);
-      const card = document.getElementById("withdrawCard").value.trim();
-      const res = document.getElementById("withdraw-res");
-
-      if(isNaN(amt) || amt <= 0 || amt > balance) { res.style.color="#ff3b30"; res.innerText="Yanlış məbləğ!"; return; }
-      if(!card) { res.style.color="#ff3b30"; res.innerText="Kart / İBAN daxil edin!"; return; }
-
-      db.ref("withdrawals/" + Date.now()).set({ pin: currentPin, amount: amt, card: card, status: "Gözləmədə" });
-      balance -= amt; updateBal();
-      res.style.color="#2ecc71"; res.innerText="Çıxarış sorğusu göndərildi!";
-      setTimeout(() => { closeWithdrawModal(); res.innerText=""; }, 2000);
-    }
-  </script>
+    </script>
 </body>
 </html>
