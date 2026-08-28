@@ -1,530 +1,432 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kral Games Casino</title>
-    <!-- Firebase SDK (Version 8) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #060204; color: #ffffff; overflow-x: hidden; padding-bottom: 70px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kral Games - VIP Casino</title>
 
-        /* GİRİŞ MODALI */
-        #loginModal { position: fixed; inset: 0; background: #060204; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        .login-box { background: #120509; padding: 25px; border-radius: 16px; border: 2px solid #ef4444; text-align: center; max-width: 340px; width: 100%; box-shadow: 0 0 30px rgba(239, 68, 68, 0.4); }
-        .login-title { font-size: 24px; font-weight: 900; background: linear-gradient(90deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-        .login-sub { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
-        .pin-input { width: 100%; padding: 14px; background: #1a080e; border: 1px solid #7f1d1d; border-radius: 10px; color: #fff; font-size: 22px; text-align: center; letter-spacing: 6px; font-weight: bold; outline: none; margin-bottom: 15px; }
-        .pin-btn { width: 100%; background: linear-gradient(135deg, #ef4444, #b91c1c); border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5); }
-        .pin-btn:disabled { opacity: 0.6; cursor: wait; }
+  <!-- Telegram SDK & Firebase Compat SDKs -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        #appContent { display: none; }
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body {
+      background: #0a0505;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+    .container { width: 100%; max-width: 440px; text-align: center; }
 
-        /* JACKPOT BANNER */
-        .jackpot-banner { background: linear-gradient(90deg, #450a0a, #991b1b, #450a0a); border-bottom: 2px solid #f59e0b; padding: 8px; text-align: center; position: relative; overflow: hidden; }
-        .jackpot-title { font-size: 11px; font-weight: 900; color: #fef08a; letter-spacing: 2px; text-transform: uppercase; }
-        .jackpot-val { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 12px #f59e0b; }
+    /* Header & Balance */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, #220505 0%, #110202 100%);
+      border: 1px solid #ff2a2a;
+      border-radius: 12px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 15px rgba(255, 42, 42, 0.3);
+    }
+    .jackpot-box { font-size: 14px; color: #ffcc00; font-weight: bold; text-shadow: 0 0 8px #ffaa00; }
+    .balance-box { font-size: 16px; font-weight: bold; color: #2ecc71; }
+    
+    .action-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+    .action-btn {
+      flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold;
+      cursor: pointer; color: #fff; text-decoration: none; font-size: 13px;
+    }
+    .btn-deposit { background: linear-gradient(45deg, #11998e, #38ef7d); }
+    .btn-withdraw { background: linear-gradient(45deg, #eb3349, #f45c43); }
 
-        /* HEADER */
-        .top-header { background: #120509; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #270913; }
-        .logo-area { font-weight: 900; font-size: 18px; background: linear-gradient(90deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .btn-top { text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; color: #fff; background: #10b981; }
+    /* PIN Screen */
+    #pin-screen {
+      background: #140505;
+      border: 2px solid #ff2a2a;
+      padding: 30px 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.4);
+    }
+    input[type="text"], input[type="number"] {
+      width: 85%; padding: 12px; border-radius: 8px; border: 1px solid #ff4444;
+      background: #000; color: #fff; font-size: 18px; text-align: center; margin-bottom: 12px; outline: none;
+    }
+    .btn-gold {
+      width: 85%; padding: 12px; border-radius: 8px; border: none;
+      background: linear-gradient(180deg, #ffe600 0%, #ff9900 100%);
+      color: #000; font-weight: bold; font-size: 16px; cursor: pointer;
+      box-shadow: 0 0 12px rgba(255, 204, 0, 0.5);
+    }
+    #status { margin-top: 10px; font-size: 14px; font-weight: bold; }
 
-        .balance-bar { background: #1a080e; padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #270913; }
-        .bal-amount { font-size: 16px; font-weight: 800; color: #22c55e; }
+    /* Tabs */
+    #game-screen { display: none; width: 100%; }
+    .tabs { display: flex; gap: 5px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1; padding: 10px 5px; background: #1a0808; border: 1px solid #441111;
+      color: #aaa; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px;
+    }
+    .tab-btn.active { background: #ff1e1e; color: #fff; border-color: #ff5555; box-shadow: 0 0 10px #ff0000; }
 
-        /* GAMES GRID */
-        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 14px; }
-        .game-card { background: #120509; border-radius: 14px; overflow: hidden; border: 1px solid #3b0712; position: relative; aspect-ratio: 1/1; cursor: pointer; }
-        .game-card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-title { position: absolute; bottom: 0; inset-x: 0; background: rgba(0,0,0,0.85); padding: 8px; font-size: 12px; font-weight: 700; text-align: center; color: #f59e0b; }
+    .game-panel {
+      background: linear-gradient(180deg, #180000 0%, #080000 100%);
+      border: 2px solid #ff2424; border-radius: 15px; padding: 12px;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.3); display: none;
+    }
+    .game-panel.active { display: block; }
 
-        /* FLOATING WHEEL */
-        .wheel-float-btn { position: fixed; bottom: 75px; right: 15px; width: 60px; height: 60px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 25px rgba(245, 158, 11, 0.7); cursor: pointer; z-index: 500; border: 2px solid #fff; animation: pulseBtn 1.5s infinite; }
-        @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+    /* VIP Slot 5-Reel (1win UI) */
+    .paytable {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+      background: #000; padding: 6px; border-radius: 8px; border: 1px solid #ff4444; margin-bottom: 10px; font-size: 10px;
+    }
+    .pay-item { background: #1a0505; border: 1px solid #551111; padding: 4px; border-radius: 4px; color: #ffcc00; }
+    
+    .slot-frame {
+      display: flex; justify-content: space-around; background: #000;
+      border: 3px solid #ffcc00; border-radius: 10px; padding: 6px; gap: 4px; margin-bottom: 12px;
+      box-shadow: inset 0 0 15px rgba(255, 204, 0, 0.4);
+    }
+    .reel-col {
+      flex: 1; display: flex; flex-direction: column; gap: 4px; background: #111;
+      border: 1px solid #333; border-radius: 6px; padding: 4px;
+    }
+    .slot-icon { font-size: 30px; height: 42px; line-height: 42px; background: #1a0505; border-radius: 4px; }
 
-        /* MODALS */
-        .game-modal { display: none; position: fixed; inset: 0; background: #060204; z-index: 1000; overflow-y: auto; flex-direction: column; }
-        .game-modal.active { display: flex; }
-        .modal-top { background: #120509; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #270913; }
-        .back-btn { background: #270913; border: 1px solid #7f1d1d; color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    /* Mines Game UI */
+    .mines-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0;
+    }
+    .mine-card {
+      aspect-ratio: 1; background: #2a0a0a; border: 1px solid #ff3333; border-radius: 8px;
+      font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .mine-card.open { background: #05200a; border-color: #2ecc71; }
+    .mine-card.boom { background: #4a0000; border-color: #ff0000; }
 
-        /* OYUN DİZAYNI */
-        .fruit-game-wrap { background: radial-gradient(circle, #250205 0%, #050002 100%); padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .paytable-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
-        .pay-card { background: rgba(30, 0, 5, 0.8); border: 1.5px solid #ef4444; border-radius: 8px; padding: 4px 6px; display: flex; align-items: center; justify-content: space-between; box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.3); }
-        .pay-card img { width: 34px; height: 34px; object-fit: contain; }
-        .pay-info { text-align: right; font-size: 11px; color: #e2e8f0; font-weight: bold; line-height: 1.2; }
-        .pay-info span { color: #f59e0b; font-weight: 900; }
+    /* Wheel UI */
+    .wheel-wrapper { position: relative; width: 200px; height: 200px; margin: 10px auto; }
+    #wheel {
+      width: 100%; height: 100%; border-radius: 50%; border: 4px solid #ffcc00;
+      transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+      background: conic-gradient(#ff0000 0deg 60deg, #0088ff 60deg 120deg, #00cc44 120deg 180deg, #aa00cc 180deg 240deg, #ffcc00 240deg 300deg, #ff6600 300deg 360deg);
+    }
+    .wheel-pointer {
+      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #fff; z-index: 5;
+    }
 
-        .slot-title-banner { text-align: center; font-size: 20px; font-weight: 900; color: #fcd34d; text-shadow: 0 0 10px #f59e0b; margin: 4px 0; }
-        .slot-frame-1win { background: linear-gradient(180deg, #580a0a 0%, #120104 100%); border: 3px solid #f59e0b; border-radius: 12px; padding: 6px; }
-        .reels-5-col { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: #000; padding: 4px; border-radius: 8px; }
-        .reel-column { display: flex; flex-direction: column; gap: 4px; }
-        
-        .slot-cell-1win { background: radial-gradient(circle, #2a050c 0%, #0d0104 100%); border: 1px solid #4a0a16; height: 64px; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 4px; }
-        .slot-cell-1win img { width: 100%; height: 100%; object-fit: contain; }
-        .slot-cell-1win.win-anim { animation: winPulse 0.4s infinite alternate; border-color: #f59e0b; background: #6b0c0c; }
-        @keyframes winPulse { 0% { transform: scale(0.92); } 100% { transform: scale(1.05); } }
-
-        .slot-controls-area { background: #0d0205; border: 1px solid #3b0712; border-radius: 14px; padding: 10px; margin-top: 8px; }
-        .slot-stats-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-        .stat-box { background: #18040a; border: 1px solid #7f1d1d; border-radius: 8px; flex: 1; padding: 6px; text-align: center; }
-        .stat-box .lbl { font-size: 10px; color: #94a3b8; font-weight: bold; }
-        .stat-box .val { font-size: 16px; font-weight: 900; color: #22c55e; }
-
-        .spin-controls-flex { display: flex; justify-content: center; align-items: center; }
-        .spin-btn-round { width: 72px; height: 72px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, #d97706 40%, #7c2d12 100%); border: 3px solid #fef08a; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; font-weight: 900; font-size: 13px; }
-        
-        /* MINES DESIGN */
-        .mines-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; aspect-ratio: 1/1; margin: 10px; }
-        .mine-tile { background: #1a080e; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 1px solid #3b0712; cursor: pointer; color: #475569; }
-        .mine-tile.star { background: #1d4ed8; border-color: #60a5fa; }
-        .mine-tile.bomb { background: #b91c1c; border-color: #fca5a5; }
-
-        /* WHEEL DESIGN */
-        .wheel-box { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
-        .wheel-container { position: relative; width: 280px; height: 280px; margin-bottom: 20px; }
-        .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid #ef4444; z-index: 10; }
-        .wheel-canvas { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #f59e0b; transition: transform 4s cubic-bezier(0.15, 0.99, 0.15, 0.99); }
-        .btn-action { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 900; cursor: pointer; width: 100%; text-transform: uppercase; }
-        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
-    </style>
+    .bet-presets { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; }
+    .preset-btn { padding: 6px 12px; background: #330808; border: 1px solid #ff4444; color: #fff; border-radius: 6px; cursor: pointer; }
+  </style>
 </head>
 <body>
 
-    <!-- GİRİŞ MODALI -->
-    <div id="loginModal">
-        <div class="login-box">
-            <div class="login-title">KRAL GAMES</div>
-            <div class="login-sub">Daxil olmaq üçün 6 rəqəmli PIN yazın</div>
-            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="******" autocomplete="off">
-            <button type="button" id="loginBtn" onclick="processLogin()" class="pin-btn">GİRİŞ ET</button>
-        </div>
+  <div class="container">
+    <h1 style="color: #ff2a2a; text-shadow: 0 0 10px #ff0000; margin-bottom: 10px;">👑 KRAL GAMES VIP 👑</h1>
+
+    <!-- PIN Screen -->
+    <div id="pin-screen">
+      <h3 style="margin-bottom: 15px; color: #ffcc00;">Giriş Üçün PIN Kodu Daxil Edin</h3>
+      <input type="text" id="pinInput" placeholder="PIN KODU">
+      <br>
+      <button class="btn-gold" onclick="verifyPin()">GİRİŞ ET</button>
+      <div id="status"></div>
     </div>
 
-    <!-- ƏSAS İNTERFEYS -->
-    <div id="appContent">
-        <div class="jackpot-banner">
-            <div class="jackpot-title">⚡ CANLI GRAND JACKPOT ⚡</div>
-            <div class="jackpot-val" id="jackpotDisplay">145.20 ₼</div>
+    <!-- Main Game Area -->
+    <div id="game-screen">
+      
+      <!-- Top Bar -->
+      <div class="header-bar">
+        <div class="jackpot-box">💎 JACKPOT: <span id="jackpot-val">245.80</span> AZN</div>
+        <div class="balance-box">💰 <span id="user-balance">100.00</span> AZN</div>
+      </div>
+
+      <!-- Deposit / Withdraw Buttons -->
+      <div class="action-btns">
+        <a href="https://t.me/gamesadmin1" target="_blank" class="action-btn btn-deposit">➕ BALANS ARTIR</a>
+        <a href="https://t.me/gamesadmin1" target="_blank" class="action-btn btn-withdraw">💸 ÇIXARIŞ ET</a>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('fruit', this)">🍉 VIP Slot</button>
+        <button class="tab-btn" onclick="switchTab('mines', this)">💣 Mines</button>
+        <button class="tab-btn" onclick="switchTab('wheel', this)">🎡 Çarx</button>
+      </div>
+
+      <!-- 1. VIP FRUIT SLOT (1WIN STYLE) -->
+      <div id="fruit-panel" class="game-panel active">
+        <div class="paytable">
+          <div class="pay-item">🍉 5x: 100 | 3x: 7</div>
+          <div class="pay-item">7️⃣ 5x: 500 | 3x: 10</div>
+          <div class="pay-item">🍇 5x: 20 | 3x: 5</div>
         </div>
 
-        <div class="top-header">
-            <div class="logo-area">KRAL GAMES</div>
-            <a href="https://t.me/gamesadmin1" class="btn-top">Kassa / Dəstək</a>
+        <div class="slot-frame">
+          <div class="reel-col" id="col1"><div class="slot-icon">🍉</div><div class="slot-icon">🍒</div><div class="slot-icon">7️⃣</div></div>
+          <div class="reel-col" id="col2"><div class="slot-icon">7️⃣</div><div class="slot-icon">🍇</div><div class="slot-icon">🍋</div></div>
+          <div class="reel-col" id="col3"><div class="slot-icon">🍇</div><div class="slot-icon">🍉</div><div class="slot-icon">🍒</div></div>
+          <div class="reel-col" id="col4"><div class="slot-icon">🍊</div><div class="slot-icon">7️⃣</div><div class="slot-icon">🍉</div></div>
+          <div class="reel-col" id="col5"><div class="slot-icon">🍒</div><div class="slot-icon">🍋</div><div class="slot-icon">🍇</div></div>
         </div>
 
-        <div class="balance-bar">
-            <span style="font-size: 12px; color: #94a3b8;">Əsas Balans:</span>
-            <div class="bal-amount"><span id="mainBalanceDisplay">0.00</span> ₼</div>
+        <div class="bet-presets">
+          <button class="preset-btn" onclick="setBet('slotBet', 1)">1</button>
+          <button class="preset-btn" onclick="setBet('slotBet', 5)">5</button>
+          <button class="preset-btn" onclick="setBet('slotBet', 10)">10</button>
+          <button class="preset-btn" onclick="setBet('slotBet', 20)">20</button>
         </div>
+        <input type="number" id="slotBet" value="2" min="1" placeholder="Mərc AZN">
+        <br>
+        <button class="btn-gold" onclick="spinSlot()">START (SPIN)</button>
+      </div>
 
-        <div class="games-grid">
-            <div class="game-card" onclick="openGame('minesModal')">
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500" alt="Mines">
-                <div class="card-title">KRAL MINES</div>
-            </div>
-            <div class="game-card" onclick="openGame('fruitModal')">
-                <img src="https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=500" alt="Fruits">
-                <div class="card-title">LUCKY 432 WAYS</div>
-            </div>
+      <!-- 2. MINES GAME -->
+      <div id="mines-panel" class="game-panel">
+        <div style="font-size: 13px; color: #ffcc00; margin-bottom: 6px;">Vuruq: <span id="mine-mult">1.00</span>x</div>
+        <div class="mines-grid" id="minesGrid"></div>
+        <input type="number" id="minesBet" value="5" min="1" placeholder="Mərc AZN">
+        <br>
+        <button class="btn-gold" id="minesStartBtn" onclick="startMines()">OYUNA BAŞLA</button>
+        <button class="btn-gold" id="minesCashoutBtn" onclick="cashoutMines()" style="display:none; background: linear-gradient(180deg, #2ecc71, #27ae60); color:#fff;">CASHOUT</button>
+      </div>
+
+      <!-- 3. WHEEL GAME -->
+      <div id="wheel-panel" class="game-panel">
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer"></div>
+          <div id="wheel"></div>
         </div>
+        <input type="number" id="wheelBet" value="5" min="1" placeholder="Mərc AZN">
+        <br>
+        <button class="btn-gold" onclick="spinWheel()">ÇARXI FIRLAT</button>
+      </div>
 
-        <div class="wheel-float-btn" onclick="openGame('wheelModal')">🎡</div>
+      <div id="game-res" style="margin-top: 12px; font-weight: bold; font-size: 15px; color:#ffcc00;"></div>
+
     </div>
+  </div>
 
-    <!-- MINES MODAL -->
-    <div id="minesModal" class="game-modal">
-        <div class="modal-top">
-            <button class="back-btn" onclick="closeGame('minesModal')">❮ Geri</button>
-            <div style="font-weight: bold;">KRAL MINES</div>
-            <div style="color:#22c55e; font-weight:bold;"><span class="gameBal">0.00</span> ₼</div>
-        </div>
-        <div class="mines-board" id="minesBoard"></div>
-        <div style="padding:10px;">
-            <input type="number" id="minesBet" value="1.00" style="width:100%; padding:10px; margin-bottom:10px; background:#1a080e; border:1px solid #7f1d1d; color:#fff; border-radius:8px; outline:none;">
-            <button id="minesBtn" class="btn-action" onclick="handleMines()">MƏRC ET</button>
-        </div>
-    </div>
+  <script>
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCk2Szhnp_5q--hnKesbVs9Dp5eMj8ePLI",
+      authDomain: "game-44f1a.firebaseapp.com",
+      databaseURL: "https://game-44f1a-default-rtdb.firebaseio.com",
+      projectId: "game-44f1a",
+      storageBucket: "game-44f1a.firebasestorage.app",
+      messagingSenderId: "121003848252",
+      appId: "1:121003848252:web:b9b2cea6c9d9682e89c939",
+      measurementId: "G-CN767860D4"
+    };
 
-    <!-- MEYVƏ OYUNU MODAL -->
-    <div id="fruitModal" class="game-modal">
-        <div class="modal-top">
-            <button class="back-btn" onclick="closeGame('fruitModal')">❮ Geri</button>
-            <div style="font-weight: bold; color: #f59e0b;">LUCKY 432 WAYS</div>
-            <div style="color:#22c55e; font-weight:bold;"><span class="gameBal">0.00</span> ₼</div>
-        </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        <div class="fruit-game-wrap">
-            <div class="paytable-grid">
-                <div class="pay-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3137/3137044.png" alt="Watermelon">
-                    <div class="pay-info">5x <span>100</span><br>4x <span>25</span><br>3x <span>7</span></div>
-                </div>
-                <div class="pay-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/236/236822.png" alt="Seven">
-                    <div class="pay-info">5x <span>500</span><br>4x <span>50</span><br>3x <span>10</span></div>
-                </div>
-                <div class="pay-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/7210/7210826.png" alt="Grape">
-                    <div class="pay-info">5x <span>20</span><br>4x <span>10</span><br>3x <span>5</span></div>
-                </div>
-                <div class="pay-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1135/1135528.png" alt="Plum">
-                    <div class="pay-info">5x <span>10</span><br>4x <span>5</span><br>3x <span>3</span></div>
-                </div>
-                <div class="pay-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/6866/6866538.png" alt="Lemon">
-                    <div class="pay-info">5x <span>8</span><br>4x <span>4</span><br>3x <span>2</span></div>
-                </div>
-                <div class="pay-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png" alt="Cherry">
-                    <div class="pay-info">5x <span>8</span><br>4x <span>4</span><br>3x <span>1</span></div>
-                </div>
-            </div>
+    // --- PIN SYSTEM ---
+    function verifyPin() {
+      const pin = document.getElementById("pinInput").value.trim();
+      const status = document.getElementById("status");
 
-            <div class="slot-title-banner">LUCKY 432 WAYS</div>
+      if (!pin) {
+        status.style.color = "orange"; status.innerText = "PIN daxil edin!"; return;
+      }
+      status.style.color = "#ffcc00"; status.innerText = "YOXLANIŞ...";
 
-            <div class="slot-frame-1win">
-                <div class="reels-5-col">
-                    <div class="reel-column">
-                        <div class="slot-cell-1win" id="c0"><img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"></div>
-                        <div class="slot-cell-1win" id="c1"><img src="https://cdn-icons-png.flaticon.com/512/3137/3137044.png"></div>
-                        <div class="slot-cell-1win" id="c2"><img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"></div>
-                    </div>
-                    <div class="reel-column">
-                        <div class="slot-cell-1win" id="c3"><img src="https://cdn-icons-png.flaticon.com/512/3137/3137044.png"></div>
-                        <div class="slot-cell-1win" id="c4"><img src="https://cdn-icons-png.flaticon.com/512/1135/1135528.png"></div>
-                        <div class="slot-cell-1win" id="c5"><img src="https://cdn-icons-png.flaticon.com/512/6866/6866538.png"></div>
-                    </div>
-                    <div class="reel-column">
-                        <div class="slot-cell-1win" id="c6"><img src="https://cdn-icons-png.flaticon.com/512/7210/7210826.png"></div>
-                        <div class="slot-cell-1win" id="c7"><img src="https://cdn-icons-png.flaticon.com/512/236/236822.png"></div>
-                        <div class="slot-cell-1win" id="c8"><img src="https://cdn-icons-png.flaticon.com/512/1728/1728723.png"></div>
-                    </div>
-                    <div class="reel-column">
-                        <div class="slot-cell-1win" id="c9"><img src="https://cdn-icons-png.flaticon.com/512/7210/7210826.png"></div>
-                        <div class="slot-cell-1win" id="c10"><img src="https://cdn-icons-png.flaticon.com/512/1728/1728723.png"></div>
-                        <div class="slot-cell-1win" id="c11"><img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"></div>
-                    </div>
-                    <div class="reel-column">
-                        <div class="slot-cell-1win" id="c12"><img src="https://cdn-icons-png.flaticon.com/512/1728/1728723.png"></div>
-                        <div class="slot-cell-1win" id="c13"><img src="https://cdn-icons-png.flaticon.com/512/3137/3137044.png"></div>
-                        <div class="slot-cell-1win" id="c14"><img src="https://cdn-icons-png.flaticon.com/512/1135/1135528.png"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="slot-controls-area">
-                <div class="slot-stats-row">
-                    <div class="stat-box">
-                        <div class="lbl">QAZANC</div>
-                        <div class="val" id="slotWinDisplay">0.00 ₼</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="lbl">MƏRC</div>
-                        <div class="val" id="slotBetDisplay">1.00 ₼</div>
-                    </div>
-                </div>
-
-                <div class="spin-controls-flex">
-                    <button class="spin-btn-round" onclick="spinSlot()">
-                        <span>↻</span>START
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- WHEEL MODAL -->
-    <div id="wheelModal" class="game-modal">
-        <div class="modal-top">
-            <button class="back-btn" onclick="closeGame('wheelModal')">❮ Geri</button>
-            <div style="font-weight: bold;">XİLAS ÇARXI (1 DƏFƏ)</div>
-            <div style="color:#22c55e; font-weight:bold;"><span class="gameBal">0.00</span> ₼</div>
-        </div>
-        <div class="wheel-box">
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <canvas id="wheelCanvas" class="wheel-canvas" width="280" height="280"></canvas>
-            </div>
-            <button class="btn-action" id="spinWheelBtn" onclick="spinWheel()">ÇARXI FIRLAT (PULSUZ)</button>
-        </div>
-    </div>
-
-    <script>
-        // FIREBASE İNİTİALİZASİYASI
-        const firebaseConfig = {
-            databaseURL: "https://kralgames-default-rtdb.firebaseio.com"
-        };
-        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        let balance = 0;
-        let currentPin = null;
-        let jackpotVal = 145.20;
-
-        const slotImages = [
-            'https://cdn-icons-png.flaticon.com/512/3137/3137044.png',
-            'https://cdn-icons-png.flaticon.com/512/236/236822.png',
-            'https://cdn-icons-png.flaticon.com/512/7210/7210826.png',
-            'https://cdn-icons-png.flaticon.com/512/1135/1135528.png',
-            'https://cdn-icons-png.flaticon.com/512/6866/6866538.png',
-            'https://cdn-icons-png.flaticon.com/512/1998/1998614.png',
-            'https://cdn-icons-png.flaticon.com/512/1728/1728723.png'
-        ];
-        const payMultipliers = { 0: 100, 1: 500, 2: 20, 3: 10, 4: 8, 5: 8, 6: 5 };
-
-        // GİRİŞƏ BİRBAŞA NEZARƏT EDƏN FUNKSİYA
-        function processLogin() {
-            const btn = document.getElementById('loginBtn');
-            const pinInput = document.getElementById('pinInput');
-            const pin = pinInput ? pinInput.value.trim() : '';
-
-            if (!pin) return alert('Zəhmət olmasa PIN kodu daxil edin!');
-
-            if (typeof firebase === 'undefined') {
-                return alert('Firebase yüklənir, 2 saniyə sonra yenidən cəhd edin...');
-            }
-
-            const database = firebase.database();
-            btn.disabled = true;
-            btn.innerText = "YOXLANIŞ...";
-
-            // Firebase ilə PIN yoxlama
-            database.ref('users/' + pin).once('value')
-                .then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        currentPin = pin;
-                         balance = parseFloat(userData.balance || 0);
-
-                        syncBalance();
-                        document.getElementById('loginModal').style.display = 'none';
-                        document.getElementById('appContent').style.display = 'block';
-                        drawWheel();
-                        checkWheelStatus();
-                    } else {
-                        alert('Daxil edilən PIN kod tapılmadı!');
-                    }
-                })
-                .catch((err) => {
-                    console.error("Firebase Xətası:", err);
-                    alert('Şəbəkə xətası! Firebase bağlantısını yoxlayın.');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerText = "GİRİŞ ET";
-                });
-        }
-
-        function syncBalance() {
-            document.getElementById('mainBalanceDisplay').innerText = balance.toFixed(2);
-            document.querySelectorAll('.gameBal').forEach(e => e.innerText = balance.toFixed(2));
-            if (currentPin && typeof firebase !== 'undefined') {
-                firebase.database().ref('users/' + currentPin + '/balance').set(balance.toFixed(2));
-            }
-        }
-
-        setInterval(() => {
-            jackpotVal = (Math.random() * (500 - 50) + 50);
-            const jEl = document.getElementById('jackpotDisplay');
-            if (jEl) jEl.innerText = jackpotVal.toFixed(2) + " ₼";
-        }, 120);
-
-        function openGame(id) { 
-            document.getElementById(id).classList.add('active'); 
-            if(id==='minesModal') resetMines(); 
-            if(id==='wheelModal') checkWheelStatus();
-        }
-        function closeGame(id) { document.getElementById(id).classList.remove('active'); }
-
-        /* SLOT LOGİKA */
-        function spinSlot() {
-            if (balance < 1) return alert('Balansınızda kifayət qədər vəsait yoxdur!');
-            balance -= 1; syncBalance();
-            document.getElementById('slotWinDisplay').innerText = '0.00 ₼';
-
-            const cells = [];
-            for(let i=0; i<15; i++) {
-                const c = document.getElementById('c' + i);
-                if (c) {
-                    cells.push(c);
-                    c.classList.remove('win-anim');
-                }
-            }
-
-            let ticks = 0;
-            const interval = setInterval(() => {
-                cells.forEach(c => { 
-                    const randIndex = Math.floor(Math.random() * slotImages.length);
-                    c.innerHTML = `<img src="${slotImages[randIndex]}">`; 
-                });
-                ticks++;
-
-                if (ticks > 14) {
-                    clearInterval(interval);
-                    if (Math.random() <= 0.3) {
-                        const matchedIdx = Math.floor(Math.random() * slotImages.length);
-                        const matchedImgHtml = `<img src="${slotImages[matchedIdx]}">`;
-                        if(cells[1]) cells[1].innerHTML = matchedImgHtml;
-                        if(cells[4]) cells[4].innerHTML = matchedImgHtml;
-                        if(cells[7]) cells[7].innerHTML = matchedImgHtml;
-
-                        let winAmt = 1 * (payMultipliers[matchedIdx] || 5);
-                        balance += winAmt; syncBalance();
-                        document.getElementById('slotWinDisplay').innerText = winAmt.toFixed(2) + ' ₼';
-                        [cells[1], cells[4], cells[7]].forEach(c => { if(c) c.classList.add('win-anim'); });
-                    }
-                }
-            }, 55);
-        }
-
-        /* MINES LOGİKA */
-        let activeMines = false;
-        function resetMines() {
-            activeMines = false;
-            const b = document.getElementById('minesBoard');
-            if(!b) return;
-            b.innerHTML = '';
-            for(let i=0; i<25; i++) {
-                let d = document.createElement('div');
-                d.className = 'mine-tile';
-                d.innerText = 'KG';
-                b.appendChild(d);
-            }
-            document.getElementById('minesBtn').innerText = 'MƏRC ET';
-        }
-
-        function handleMines() {
-            if(!activeMines) {
-                let bet = parseFloat(document.getElementById('minesBet').value);
-                if(balance < bet) return alert('Balans yetərsizdir!');
-                balance -= bet; syncBalance();
-                activeMines = true;
-                document.getElementById('minesBtn').innerText = 'QAZANCI GÖTÜR';
-                
-                let tiles = document.querySelectorAll('.mine-tile');
-                tiles.forEach((t) => {
-                    t.innerText = '';
-                    t.onclick = () => {
-                        if(!activeMines) return;
-                        if(Math.random() < 0.2) {
-                            t.classList.add('bomb'); t.innerText = '💣';
-                            alert('Bomba patladı!'); activeMines = false;
-                            resetMines();
-                        } else {
-                            t.classList.add('star'); t.innerText = '⭐';
-                        }
-                    }
-                });
-            } else {
-                balance += parseFloat(document.getElementById('minesBet').value) * 1.5;
-                syncBalance(); resetMines();
-            }
-        }
-
-        /* ÇARX LOGİKA */
-        function getWheelSectors() {
-            return [
-                { label: '💣', type: 'bomb', win: 0, weight: 60 },
-                { label: '5 ₼', type: 'win', win: 5, weight: 45 },
-                { label: '💣', type: 'bomb', win: 0, weight: 60 },
-                { label: '20 ₼', type: 'win', win: 20, weight: 30 },
-                { label: '💣', type: 'bomb', win: 0, weight: 60 },
-                { label: '5 ₼', type: 'win', win: 5, weight: 45 },
-                { label: '💣', type: 'bomb', win: 0, weight: 60 },
-                { label: '100 ₼', type: 'win', win: 100, weight: 1 },
-                { label: '💣', type: 'bomb', win: 0, weight: 60 },
-                { label: '20 ₼', type: 'win', win: 20, weight: 30 }
-            ];
-        }
-
-        function drawWheel() {
-            const canvas = document.getElementById('wheelCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const sectors = getWheelSectors();
-            const arc = (2 * Math.PI) / 10;
-
-            for (let i = 0; i < 10; i++) {
-                const angle = i * arc;
-                ctx.beginPath();
-                ctx.fillStyle = i % 2 === 0 ? '#1f080e' : '#0d0205';
-                ctx.arc(140, 140, 140, angle, angle + arc);
-                ctx.lineTo(140, 140);
-                ctx.fill();
-
-                ctx.save();
-                ctx.translate(140, 140);
-                ctx.rotate(angle + arc / 2);
-                ctx.textAlign = "right";
-                ctx.fillStyle = sectors[i].type === 'bomb' ? '#ef4444' : '#f59e0b';
-                ctx.font = "bold 16px sans-serif";
-                ctx.fillText(sectors[i].label, 125, 5);
-                ctx.restore();
-            }
-        }
-
-        function checkWheelStatus() {
-            if (!currentPin || typeof firebase === 'undefined') return;
-            firebase.database().ref('users/' + currentPin + '/wheelSpun').once('value').then(snap => {
-                if (snap.val() === true) {
-                    const btn = document.getElementById('spinWheelBtn');
-                    if(btn) {
-                        btn.disabled = true;
-                        btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
-                    }
-                }
-            });
-        }
-
-        let currentRotation = 0;
-        function spinWheel() {
-            const btn = document.getElementById('spinWheelBtn');
-            if (balance > 0) return alert('Şans çarxı yalnız balans 0.00 ₼ olduqda istifadə edilə bilər!');
-
-            btn.disabled = true;
-
-            const sectors = getWheelSectors();
-            let totalWeight = sectors.reduce((a, b) => a + b.weight, 0);
-            let randomNum = Math.random() * totalWeight;
-            let selectedIndex = 0;
-
-            for (let i = 0; i < sectors.length; i++) {
-                if (randomNum < sectors[i].weight) {
-                    selectedIndex = i;
-                    break;
-                }
-                randomNum -= sectors[i].weight;
-            }
-
-            const sectorDegree = 360 / 10;
-            const targetDegree = 360 - (selectedIndex * sectorDegree) - (sectorDegree / 2);
-            currentRotation += (360 * 5) + targetDegree - (currentRotation % 360);
-
-            const canvas = document.getElementById('wheelCanvas');
-            if(canvas) canvas.style.transform = `rotate(${currentRotation}deg)`;
-
+      db.ref("pins/" + pin).once("value")
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            status.style.color = "#2ecc71"; status.innerText = "Giriş Uğurludur!";
             setTimeout(() => {
-                if (currentPin && typeof firebase !== 'undefined') {
-                    firebase.database().ref('users/' + currentPin + '/wheelSpun').set(true);
-                }
-                btn.innerText = "ŞANS HÜQUQUNUZ BİTDİ!";
+              document.getElementById("pin-screen").style.display = "none";
+              document.getElementById("game-screen").style.display = "block";
+              initMinesGrid();
+            }, 600);
+          } else {
+            status.style.color = "#ff3333"; status.innerText = "Səhv PIN Kodu!";
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          status.style.color = "#ff3333"; status.innerText = "Bazaya qoşulma xətası!";
+        });
+    }
 
-                const sec = sectors[selectedIndex];
-                if (sec.type === 'bomb') {
-                    alert('💣 BOMBA DÜŞDÜ! Təəssüf ki, şansınız gətirmədi.');
-                } else {
-                    balance += sec.win; syncBalance();
-                    alert(`🎉 TEBRİKLƏR! Xilas çarxından ${sec.win}.00 ₼ QAZANDINIZ!`);
-                }
-            }, 4000);
+    // Dynamic Jackpot
+    let jackpotVal = 245.80;
+    setInterval(() => {
+      jackpotVal += (Math.random() * 0.15);
+      if (jackpotVal > 500) jackpotVal = 50.00;
+      document.getElementById("jackpot-val").innerText = jackpotVal.toFixed(2);
+    }, 2000);
+
+    // Global Balance & Tabs
+    let balance = 100.00;
+    function updateBal() { document.getElementById("user-balance").innerText = balance.toFixed(2); }
+    function setBet(id, val) { document.getElementById(id).value = val; }
+
+    function switchTab(tab, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tab + '-panel').classList.add('active');
+      document.getElementById('game-res').innerText = '';
+    }
+
+    // --- 1. VIP SLOT LOGIC ---
+    const icons = ['🍉', '7️⃣', '🍇', '🍒', '🍊', '🍋'];
+    function spinSlot() {
+      const bet = parseFloat(document.getElementById("slotBet").value);
+      const res = document.getElementById("game-res");
+
+      if (isNaN(bet) || bet <= 0 || bet > balance) {
+        res.style.color = "red"; res.innerText = "Kifayət qədər balans yoxdur!"; return;
+      }
+
+      balance -= bet; updateBal();
+      res.innerText = "Fırlanır...";
+
+      let counter = 0;
+      const spinInt = setInterval(() => {
+        for(let c = 1; c <= 5; c++) {
+          const col = document.getElementById('col' + c);
+          col.innerHTML = `
+            <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
+            <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
+            <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
+          `;
         }
-    </script>
+        counter++;
+        if(counter > 12) {
+          clearInterval(spinInt);
+          // Check Win Logic
+          const isJackpot = Math.random() < 0.05; // 5% chance
+          const winMult = isJackpot ? 50 : (Math.random() < 0.4 ? 2.5 : 0);
+          
+          if(winMult > 0) {
+            const win = bet * winMult;
+            balance += win; updateBal();
+            res.style.color = "#2ecc71";
+            res.innerText = isJackpot ? `🔥 BIG JACKPOT! +${win.toFixed(2)} AZN` : `🎉 UDUŞ! +${win.toFixed(2)} AZN`;
+          } else {
+            res.style.color = "#ff3333"; res.innerText = "Uduzduz!";
+          }
+        }
+      }, 80);
+    }
+
+    // --- 2. MINES GAME LOGIC ---
+    let mineLocations = [];
+    let minesActive = false;
+    let mineBet = 0;
+    let openedCount = 0;
+
+    function initMinesGrid() {
+      const grid = document.getElementById("minesGrid");
+      grid.innerHTML = "";
+      for(let i=0; i<15; i++) {
+        const card = document.createElement("div");
+        card.className = "mine-card";
+        card.dataset.index = i;
+        card.onclick = () => clickMine(i);
+        grid.appendChild(card);
+      }
+    }
+
+    function startMines() {
+      const bet = parseFloat(document.getElementById("minesBet").value);
+      if (isNaN(bet) || bet <= 0 || bet > balance) {
+        alert("Kifayət qədər balans yoxdur!"); return;
+      }
+      balance -= bet; mineBet = bet; updateBal();
+      minesActive = true; openedCount = 0;
+      document.getElementById("mine-mult").innerText = "1.00";
+
+      // 3 mines randomly
+      mineLocations = [];
+      while(mineLocations.length < 3) {
+        let r = Math.floor(Math.random() * 15);
+        if(!mineLocations.includes(r)) mineLocations.push(r);
+      }
+
+      initMinesGrid();
+      document.getElementById("minesStartBtn").style.display = "none";
+      document.getElementById("minesCashoutBtn").style.display = "inline-block";
+      document.getElementById("game-res").innerText = "Minaları seçin!";
+    }
+
+    function clickMine(idx) {
+      if(!minesActive) return;
+      const cards = document.querySelectorAll(".mine-card");
+      const card = cards[idx];
+      if(card.classList.contains("open")) return;
+
+      if(mineLocations.includes(idx)) {
+        // Boom
+        card.classList.add("boom"); card.innerText = "💣";
+        minesActive = false;
+        document.getElementById("game-res").style.color = "red";
+        document.getElementById("game-res").innerText = "💥 MİNAYA DÜŞDÜNÜZ!";
+        document.getElementById("minesStartBtn").style.display = "inline-block";
+        document.getElementById("minesCashoutBtn").style.display = "none";
+      } else {
+        card.classList.add("open"); card.innerText = "💎";
+        openedCount++;
+        const currentMult = (1 + openedCount * 0.35).toFixed(2);
+        document.getElementById("mine-mult").innerText = currentMult;
+      }
+    }
+
+    function cashoutMines() {
+      if(!minesActive || openedCount === 0) return;
+      const mult = parseFloat(document.getElementById("mine-mult").innerText);
+      const win = mineBet * mult;
+      balance += win; updateBal();
+      minesActive = false;
+      document.getElementById("game-res").style.color = "#2ecc71";
+      document.getElementById("game-res").innerText = `💰 CASHOUT: +${win.toFixed(2)} AZN`;
+      document.getElementById("minesStartBtn").style.display = "inline-block";
+      document.getElementById("minesCashoutBtn").style.display = "none";
+    }
+
+    // --- 3. WHEEL GAME LOGIC ---
+    let wheelDeg = 0;
+    function spinWheel() {
+      const bet = parseFloat(document.getElementById("wheelBet").value);
+      const res = document.getElementById("game-res");
+      if (isNaN(bet) || bet <= 0 || bet > balance) {
+        res.style.color = "red"; res.innerText = "Kifayət qədər balans yoxdur!"; return;
+      }
+      balance -= bet; updateBal();
+      res.innerText = "Çarx fırlanır...";
+
+      wheelDeg += 1800 + Math.floor(Math.random() * 360);
+      document.getElementById("wheel").style.transform = `rotate(${wheelDeg}deg)`;
+
+      setTimeout(() => {
+        const mults = [2, 0, 1.5, 0.5, 3, 0];
+        const actualDeg = (360 - (wheelDeg % 360)) % 360;
+        const mult = mults[Math.floor(actualDeg / 60)];
+        const win = bet * mult;
+        balance += win; updateBal();
+
+        if(win > 0) {
+          res.style.color = "#2ecc71"; res.innerText = `🎉 QAZANDINIZ: +${win.toFixed(2)} AZN`;
+        } else {
+          res.style.color = "#ff3333"; res.innerText = "Uduşsuz fırlanma!";
+        }
+      }, 4000);
+    }
+  </script>
 </body>
-</html>
+    </html>
+    
