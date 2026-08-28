@@ -197,50 +197,78 @@
       appId: "1:121003848252:web:b9b2cea6c9d9682e89c939"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.database();
 
     let currentPin = "";
     let balance = 0;
     let wheelUsed = false;
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
     function playSound(type) {
-      if(audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      
-      if(type === 'click') {
-        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-      } else if(type === 'win') {
-        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-      } else if(type === 'boom') {
-        osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+      try {
+        initAudio();
+        if(audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); 
+        gain.connect(audioCtx.destination);
+        
+        if(type === 'click') {
+          osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        } else if(type === 'win') {
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        } else if(type === 'boom') {
+          osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        }
+      } catch(e) {
+        console.log("Audio error:", e);
       }
     }
 
     function verifyPin() {
-      const pin = document.getElementById("pinInput").value.trim();
+      const pinInput = document.getElementById("pinInput");
       const status = document.getElementById("status");
-      if(!pin) { status.style.color="orange"; status.innerText="PIN daxil edin!"; return; }
+      const pin = pinInput ? pinInput.value.trim() : "";
+      
+      if(!pin) { 
+        status.style.color="orange"; 
+        status.innerText="PIN daxil edin!"; 
+        return; 
+      }
+
+      status.style.color="#ffd700";
+      status.innerText="Yoxlanılır...";
 
       db.ref("pins/" + pin).once("value").then(snapshot => {
         if(snapshot.exists()) {
           currentPin = pin;
-          balance = snapshot.val().balance || 0;
+          const data = snapshot.val();
+          balance = (data && typeof data.balance === 'number') ? data.balance : 0;
+          
           document.getElementById("pin-screen").style.display = "none";
           document.getElementById("game-screen").style.display = "block";
+          
           updateBal();
           initMinesGrid();
           drawWheel();
@@ -251,14 +279,17 @@
               document.getElementById("user-balance").innerText = balance.toFixed(2);
               if(balance <= 0 && !wheelUsed) {
                 openGame('wheel');
-                document.getElementById("wheelSpinBtn").style.display = "inline-block";
-                document.getElementById("wheelStatusMsg").innerText = "Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!";
               }
             }
           });
         } else {
-          status.style.color="#ff3b30"; status.innerText="Səhv PIN Kodu!";
+          status.style.color="#ff3b30"; 
+          status.innerText="Səhv PIN Kodu!";
         }
+      }).catch(err => {
+        status.style.color="#ff3b30";
+        status.innerText="Xəta baş verdi. Yenidən yoxlayın.";
+        console.error(err);
       });
     }
 
@@ -270,14 +301,15 @@
       
       if(balance <= 0 && !wheelUsed) {
         openGame('wheel');
-        document.getElementById("wheelSpinBtn").style.display = "inline-block";
-        document.getElementById("wheelStatusMsg").innerText = "Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!";
       }
     }
 
     function openGame(name) {
       document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById(name + '-panel').classList.add('active');
+      const targetPanel = document.getElementById(name + '-panel');
+      if(targetPanel) {
+        targetPanel.classList.add('active');
+      }
       document.getElementById("game-res").innerText = "";
       if(name === 'wheel') checkWheelState();
     }
@@ -302,11 +334,14 @@
       let counter = 0;
       const interval = setInterval(() => {
         for(let c=1; c<=5; c++) {
-          document.getElementById('col'+c).innerHTML = `
-            <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
-            <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
-            <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
-          `;
+          const colElem = document.getElementById('col'+c);
+          if(colElem) {
+            colElem.innerHTML = `
+              <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
+              <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
+              <div class="slot-icon">${icons[Math.floor(Math.random()*icons.length)]}</div>
+            `;
+          }
         }
         counter++;
         if(counter > 10) {
@@ -329,6 +364,7 @@
 
     function initMinesGrid() {
       const grid = document.getElementById("minesGrid");
+      if(!grid) return;
       grid.innerHTML = "";
       for(let i=0; i<15; i++) {
         const card = document.createElement("div");
@@ -363,7 +399,7 @@
       if(!minesActive) return;
       const cards = document.querySelectorAll(".mine-card");
       const card = cards[idx];
-      if(card.classList.contains("open")) return;
+      if(!card || card.classList.contains("open")) return;
 
       playSound('click');
       if(mineLocations.includes(idx)) {
@@ -407,10 +443,11 @@
     ];
 
     const canvas = document.getElementById("wheelCanvas");
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas ? canvas.getContext("2d") : null;
     const arc = Math.PI * 2 / wheelSectors.length;
 
     function drawWheel() {
+      if(!ctx) return;
       ctx.clearRect(0, 0, 300, 300);
       for(let i=0; i<wheelSectors.length; i++) {
         const angle = i * arc;
@@ -433,12 +470,19 @@
     }
 
     function checkWheelState() {
-      if(wheelUsed || balance > 0) {
-        document.getElementById("wheelSpinBtn").style.display = "none";
-        if(wheelUsed) document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız artıq istifadə olunub!";
-        else document.getElementById("wheelStatusMsg").innerText = "Çarx yalnız balans 0 olanda aktivləşir!";
+      const spinBtn = document.getElementById("wheelSpinBtn");
+      const statusMsg = document.getElementById("wheelStatusMsg");
+      if(!spinBtn || !statusMsg) return;
+
+      if(wheelUsed) {
+        spinBtn.style.display = "none";
+        statusMsg.innerText = "Çarx şansınız artıq istifadə olunub!";
+      } else if(balance > 0) {
+        spinBtn.style.display = "none";
+        statusMsg.innerText = "Çarx yalnız balans 0 olanda aktivləşir!";
       } else {
-        document.getElementById("wheelSpinBtn").style.display = "inline-block";
+            spinBtn.style.display = "inline-block";
+        statusMsg.innerText = "Balansınız bitdi! 1 dəfəlik pulsuz çarx haqqınız var!";
       }
     }
 
@@ -446,34 +490,8 @@
     function spinWheel() {
       if(wheelUsed || balance > 0) return;
       wheelUsed = true;
-      document.getElementById("wheelSpinBtn").style.display = "none";
-      playSound('click');
-
-      let rand = Math.random() * 100;
-      let winningIndex = 1;
-      if(rand < 3) winningIndex = 0;
-      else if(rand < 33) winningIndex = (Math.random() < 0.5 ? 4 : 8);
-      else if(rand < 81) winningIndex = (Math.random() < 0.5 ? 2 : 6);
-      else {
-        const bombs = [1, 3, 5, 7, 9];
-        winningIndex = bombs[Math.floor(Math.random() * bombs.length)];
-      }
-
-          function checkWheelState() {
-      if(wheelUsed || balance > 0) {
-        document.getElementById("wheelSpinBtn").style.display = "none";
-        if(wheelUsed) document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız artıq istifadə olunub!";
-        else document.getElementById("wheelStatusMsg").innerText = "Çarx yalnız balans 0 olanda aktivləşir!";
-      } else {
-        document.getElementById("wheelSpinBtn").style.display = "inline-block";
-      }
-    }
-
-    let startAngle = 0;
-    function spinWheel() {
-      if(wheelUsed || balance > 0) return;
-      wheelUsed = true;
-      document.getElementById("wheelSpinBtn").style.display = "none";
+      const spinBtn = document.getElementById("wheelSpinBtn");
+      if(spinBtn) spinBtn.style.display = "none";
       playSound('click');
 
       let rand = Math.random() * 100;
@@ -490,8 +508,10 @@
       const degrees = spins * 360 + (wheelSectors.length - winningIndex) * (360 / wheelSectors.length) - 15;
       startAngle += degrees;
       
-      canvas.style.transition = "transform 4s cubic-bezier(0.15, 0.85, 0.12, 0.99)";
-      canvas.style.transform = `rotate(${startAngle}deg)`;
+      if(canvas) {
+        canvas.style.transition = "transform 4s cubic-bezier(0.15, 0.85, 0.12, 0.99)";
+        canvas.style.transform = `rotate(${startAngle}deg)`;
+      }
 
       setTimeout(() => {
         const prize = wheelSectors[winningIndex];
@@ -507,7 +527,8 @@
           res.style.display = "block";
           res.innerText = "💥 Təəssüf, bomba çıxdı!";
         }
-        document.getElementById("wheelStatusMsg").innerText = "Çarx şansınız bitdi.";
+        const statusMsg = document.getElementById("wheelStatusMsg");
+        if(statusMsg) statusMsg.innerText = "Çarx şansınız bitdi.";
       }, 4000);
     }
 
